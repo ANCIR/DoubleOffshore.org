@@ -86,19 +86,19 @@ class FPSO(Scraper):
     site_url = 'http://fpso.com'
         
     def unpack_rigrow(self, row, data):
+        """Get the data from one row of a FPSO table"""
         cells = row.findall('td')
         for cellno, label in enumerate((
                 'name', 'owner', 'operator', 'field_operator',
                 'location_field', 'country', 'capacity')):
             data[label] = cells[cellno].text_content()
         data['detail_uri'] = self.site_url + cells[0].find('a').attrib['href']
-        logging.debug(data)
+        logger.debug(data)
         return (data['name'], data)
-    
+        
     def crawl_indices(self):
         page_num = 1
         while True:
-            page_num += 1
             url = 'http://fpso.com/fpso/?page=%s' % page_num
             page = urllib.request.urlopen(url)
             tree = lxml.html.parse(page)
@@ -111,6 +111,59 @@ class FPSO(Scraper):
             
             for row in rigrows:
                 yield self.unpack_rigrow(row, basedata)
+
+            page_num += 1             
+            if page_num > 30:
+                logger.warn("""
+                   many more pages than expected on FPSO
+                   aborting from fear of infinite loop""")
+                raise StopIteration
+
+
+class RigzoneBasic(Scraper):
+    """
+    Rigzone -- just getting the rig names, but not going into the detail pages
+    """
+
+    site = 'Rigzone -- basic'
+    site_url = 'http://www.rigzone.com'
+
+    def unpack_rigrow(self, row, data):
+        """Get the data from one row of a FPSO table"""
+        cells = row.findall('td')
+        for cellno, label in enumerate((
+                'name', 'manager', 'rig_type', 'rated_water_depth', 'drilling_depth')):
+            data[label] = cells[cellno].text_content().strip()
+        data['detail_uri'] = self.site_url + cells[0].find('a').attrib['href']
+        logger.debug(data)
+        return (data['name'], data)
+
+    
+    def crawl_indices(self):
+        page_num = 1
+        while True:
+            url = 'http://www.rigzone.com/data/results.asp?P=%s&Region_ID=10' % page_num
+            page = urllib.request.urlopen(url)
+            tree = lxml.html.parse(page)
+            sel = CSSSelector('tr[style*="height:20px;"]')
+            rigrows = sel(tree)
+            if len(rigrows) == 0:
+                raise StopIteration
+
+            basedata = copy.copy(self.basedata)
+            basedata['source_uri'] = url
+            
+            for row in rigrows:
+                yield self.unpack_rigrow(row, basedata)
+
+
+            page_num += 1
+            if page_num > 8:
+                logger.warn("""
+                   many more pages than expected on Rigdata
+                   aborting from fear of infinite loop""")
+                raise StopIteration
+           
 
 
 def run_all_scrapers():
