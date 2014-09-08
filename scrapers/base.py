@@ -17,11 +17,22 @@ import copy
 import dataset
 import datetime
 import logging
+import lxml.html
 import random
 import string
+import urllib.request
+
+from lxml.cssselect import CSSSelector
 
 
 DBURI = 'sqlite:///doubleoffshore.sqlite'
+USE_TOR = False
+if USE_TOR:
+    import socks
+    import socket
+    socks.setdefaultproxy(socks.PROXY_TYPE_SOCKS5, "127.0.0.1", 9050)
+    socket.socket = socks.socksocket
+
 
 db = dataset.connect(DBURI)
 
@@ -59,6 +70,7 @@ class Scraper:
         logger.debug('adding item')
         item = copy.copy(self.basedata)
         item['rig_id'] = rigID
+        item.update(data)
         self.table.insert(item)
 
     def setup(self):
@@ -71,5 +83,36 @@ class Scraper:
 class FPSO(Scraper):
 
     site = 'FPSO'
+    site_url = 'http://fpso.com'
+        
+    def unpack_rigrow(self, row, data):
+        cells = row.findall('td')
+        for cellno, label in enumerate((
+                'name', 'owner', 'operator', 'field_operator',
+                'location_field', 'country', 'capacity')):
+            data[label] = cells[cellno].text_content()
+        data['detail_uri'] = self.site_url + cells[0].find('a').attrib['href']
+        logging.debug(data)
+        return (data['name'], data)
+    
+    def crawl_indices(self):
+        page_num = 1
+        while True:
+            page_num += 1
+            url = 'http://fpso.com/fpso/?page=%s' % page_num
+            page = urllib.request.urlopen(url)
+            tree = lxml.html.parse(page)
+            rigrows = CSSSelector('tr.odd,tr.even')(tree)
+            if len(rigrows) == 0:
+                raise StopIteration
+                
+            basedata = copy.copy(self.basedata)
+            basedata['source_uri'] = url
+            
+            for row in rigrows:
+                yield self.unpack_rigrow(row, basedata)
+            raise StopIteration # XXX debug
+
+    
 
         
