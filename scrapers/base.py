@@ -26,6 +26,8 @@ from lxml.cssselect import CSSSelector
 
 
 DBURI = 'sqlite:///doubleoffshore.sqlite'
+
+# XXX needs reworking for python3 -- see https://github.com/kennethreitz/requests/pull/478
 USE_TOR = False
 if USE_TOR:
     import socks
@@ -164,10 +166,60 @@ class RigzoneBasic(Scraper):
                    aborting from fear of infinite loop""")
                 raise StopIteration
            
+class RigzoneFull(RigzoneBasic):
+    
+    def find_value(self, tree, label):
+        path = './/strong[contains(text(), "%s")]' % label
+        label_node = tree.xpath(path)[0]
+        value = label_node.getparent().getnext().text_content().strip()
+        return value
+    
+    def scrape_detail_page(self, data):
+        logger.debug('making request for %s' % data['detail_uri'])
+        page = urllib.request.urlopen(data['detail_uri'])
+        logger.debug('opened page')
+        tree = lxml.html.parse(page)
+        
+        # ignore labels we know from the index page:
+        # name, manager, rig type, rated water depth, drilling depth
+        labels = {
+            # overview
+            'Rig Owner:': 'owner',
+            'Competitive Rig:': 'competitive_rig',            
+            ' Type:': 'ship_type', # may be rig type, drillship type,...
+            'Rig Design': 'rig_design',
+            
+            # contract
+            'Operating Status:': 'operating_status',
+            'Operator:': 'operator',
+            
+            # location
+            'Region:': 'region',
+            'Country:': 'country',
+            'Current Water Depth:': 'current_water_depth',
+        }
+        for l in (
+                'Classification:', 'Rig Design:', 'Shipyard:', 'Delivery Year:',
+                'Flag:', 'Derrick:', 'Drawworks:', 'Mud Pumps:', 'Top Drive:',
+                'Rotary Table:'
+                ):
+            labels[l] = l.strip(':').lower()
+        for (searchterm, dbname) in labels.items():
+            data[dbname] = self.find_value(tree, searchterm)
+        
+        logger.debug(data)
+        return data
 
+    def add_item(self, rigID, data):
+        logger.debug('adding item')
+        item = copy.copy(self.basedata)
+        item['rig_id'] = rigID
+        item.update(data)
+        data = self.scrape_detail_page(data)
+        self.table.insert(item)
 
 def run_all_scrapers():
-    scrapers = [FPSO,]
+    scrapers = [FPSO,RigzoneFull]
     for scraper_cl in scrapers:
         instance = scraper_cl()
         instance.run()
