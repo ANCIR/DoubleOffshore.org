@@ -111,8 +111,13 @@ class FPSO(Scraper):
             
             for row in rigrows:
                 yield self.unpack_rigrow(row, basedata)
-            raise StopIteration # XXX debug
 
-    
 
+def run_all_scrapers():
+    scrapers = [FPSO,]
+    for scraper_cl in scrapers:
+        instance = scraper_cl()
+        instance.run()
         
+if __name__ == '__main__':
+    run_all_scrapers()
