@@ -25,7 +25,8 @@ import urllib.request
 from lxml.cssselect import CSSSelector
 
 
-DBURI = 'sqlite:///doubleoffshore.sqlite'
+DBURI = 'postgresql://doubleoffshore:Ezeech2o@localhost/doubleoffshore'
+
 
 # XXX needs reworking for python3 -- see https://github.com/kennethreitz/requests/pull/478
 USE_TOR = False
