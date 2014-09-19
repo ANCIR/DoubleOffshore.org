@@ -19,8 +19,8 @@ def url2json(url):
     return json.loads(raw.decode('utf-8'))
     
 def reconcile_matches(corp):
-    url = 'http://opencorporates.com/reconcile?query=%s' % (
-        urllib.parse.quote(corp))
+    url = 'http://opencorporates.com/reconcile?query=%s&api_token=%s' % (
+        urllib.parse.quote(corp), settings.OPENCORPORATES_API_KEY)
     return(url2json(url)['result'])
 
 def details_for_corp(corpid):
@@ -33,7 +33,7 @@ def details_for_corp(corpid):
       'officers': [x['officer'].get('name', '').title() for x in fulldata.get('officers', [])],
       #'address': fulldata.get('registered_address_in_full', u'') or u'',
       'url': fulldata['opencorporates_url'],
-            }
+        }
     return(key_data)
 
 
@@ -63,6 +63,9 @@ def collate_company_names():
                 names.add(rig[name])
     return names
 
-def collect_all_corpinfo():
-    for company in sorted(collate_company_names())[:5]:
+def collect_all_corpinfo(skip_existing=True):
+    for company in sorted(collate_company_names()):
+        if skip_existing and DB['company_names'].find_one(company=company):
+            logger.debug('skipping %s' % company)
+            continue
         add_corp(company, {'search_term': company})
