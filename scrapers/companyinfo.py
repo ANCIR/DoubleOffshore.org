@@ -24,7 +24,8 @@ def reconcile_matches(corp):
     return(url2json(url)['result'])
 
 def details_for_corp(corpid):
-    url = 'http://api.opencorporates.com/%s%s' % (OCVERSION, corpid)
+    url = 'http://api.opencorporates.com/%s%s?api_token=%s' % (OCVERSION, corpid,
+                                                               settings.OPENCORPORATES_API_KEY)
     fulldata = url2json(url)['results']['company']
     key_data = {
       'country' : fulldata.get('jurisdiction_code', ''),
