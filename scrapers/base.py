@@ -24,20 +24,16 @@ import urllib.request
 
 from lxml.cssselect import CSSSelector
 
+import settings
 
-DBURI = 'postgresql://doubleoffshore:Ezeech2o@localhost/doubleoffshore'
-
-
-# XXX needs reworking for python3 -- see https://github.com/kennethreitz/requests/pull/478
-USE_TOR = False
-if USE_TOR:
+if settings.USE_TOR:
     import socks
     import socket
     socks.setdefaultproxy(socks.PROXY_TYPE_SOCKS5, "127.0.0.1", 9050)
     socket.socket = socks.socksocket
 
 
-db = dataset.connect(DBURI)
+db = dataset.connect(settings.DBURI)
 
 
 logging.basicConfig(level=logging.DEBUG)
