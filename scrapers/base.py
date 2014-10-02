@@ -1,5 +1,5 @@
 
-"""
+u"""
 data structure
 
 site
@@ -20,7 +20,7 @@ import logging
 import lxml.html
 import random
 import string
-import urllib.request
+import urllib2, urllib
 
 from lxml.cssselect import CSSSelector
 
@@ -29,7 +29,7 @@ import settings
 if settings.USE_TOR:
     import socks
     import socket
-    socks.setdefaultproxy(socks.PROXY_TYPE_SOCKS5, "127.0.0.1", 9050)
+    socks.setdefaultproxy(socks.PROXY_TYPE_SOCKS5, u"127.0.0.1", 9050)
     socket.socket = socks.socksocket
 
 
@@ -41,10 +41,10 @@ logger = logging.getLogger(__name__)
 
 
 def nonce(chars=8):
-    return ''.join(random.choice(string.ascii_uppercase + string.ascii_lowercase) for x in range(chars))
+    return u''.join(random.choice(string.ascii_uppercase + string.ascii_lowercase) for x in xrange(chars))
 
-class Scraper:
-    table = db['rigs']
+class Scraper(object):
+    table = db[u'rigs']
 
     def run(self):
         self.setup()
@@ -60,97 +60,97 @@ class Scraper:
         # data contains everything else that we found and don't want to repeat
         # XXX: need to deal with the possibility of duplicates here, at least in warning
         # unique should be (site, scrape_id, rig_id)
-        logger.debug('reading indices')
+        logger.debug(u'reading indices')
 
         for item in []:
-            yield ('NA', {})
+            yield (u'NA', {})
     
     def add_item(self, rigID, data):
-        logger.debug('adding item')
+        logger.debug(u'adding item')
         item = copy.copy(self.basedata)
-        item['rig_id'] = rigID
+        item[u'rig_id'] = rigID
         item.update(data)
         self.table.insert(item)
 
     def setup(self):
         self.basedata = {
-            'site': self.site,
-            'scrape_id': nonce(),
-            'scrape_date': datetime.datetime.now(),
+            u'site': self.site,
+            u'scrape_id': nonce(),
+            u'scrape_date': datetime.datetime.now(),
             }
 
 class FPSO(Scraper):
 
-    site = 'FPSO'
-    site_url = 'http://fpso.com'
+    site = u'FPSO'
+    site_url = u'http://fpso.com'
         
     def unpack_rigrow(self, row, data):
-        """Get the data from one row of a FPSO table"""
-        cells = row.findall('td')
+        u"""Get the data from one row of a FPSO table"""
+        cells = row.findall(u'td')
         for cellno, label in enumerate((
-                'name', 'owner', 'operator', 'field_operator',
-                'location_field', 'country', 'capacity')):
+                u'name', u'owner', u'operator', u'field_operator',
+                u'location_field', u'country', u'capacity')):
             data[label] = cells[cellno].text_content()
-        data['detail_uri'] = self.site_url + cells[0].find('a').attrib['href']
+        data[u'detail_uri'] = self.site_url + cells[0].find(u'a').attrib[u'href']
         logger.debug(data)
-        return (data['name'], data)
+        return (data[u'name'], data)
         
     def crawl_indices(self):
         page_num = 1
         while True:
-            url = 'http://fpso.com/fpso/?page=%s' % page_num
-            page = urllib.request.urlopen(url)
+            url = u'http://fpso.com/fpso/?page=%s' % page_num
+            page = urllib2.urlopen(url)
             tree = lxml.html.parse(page)
-            rigrows = CSSSelector('tr.odd,tr.even')(tree)
+            rigrows = CSSSelector(u'tr.odd,tr.even')(tree)
             if len(rigrows) == 0:
                 raise StopIteration
                 
             basedata = copy.copy(self.basedata)
-            basedata['source_uri'] = url
+            basedata[u'source_uri'] = url
             
             for row in rigrows:
                 yield self.unpack_rigrow(row, basedata)
 
             page_num += 1             
             if page_num > 30:
-                logger.warn("""
+                logger.warn(u"""
                    many more pages than expected on FPSO
                    aborting from fear of infinite loop""")
                 raise StopIteration
 
 
 class RigzoneBasic(Scraper):
-    """
+    u"""
     Rigzone -- just getting the rig names, but not going into the detail pages
     """
 
-    site = 'Rigzone -- basic'
-    site_url = 'http://www.rigzone.com'
+    site = u'Rigzone -- basic'
+    site_url = u'http://www.rigzone.com'
 
     def unpack_rigrow(self, row, data):
-        """Get the data from one row of a FPSO table"""
-        cells = row.findall('td')
+        u"""Get the data from one row of a FPSO table"""
+        cells = row.findall(u'td')
         for cellno, label in enumerate((
-                'name', 'manager', 'rig_type', 'rated_water_depth', 'drilling_depth')):
+                u'name', u'manager', u'rig_type', u'rated_water_depth', u'drilling_depth')):
             data[label] = cells[cellno].text_content().strip()
-        data['detail_uri'] = self.site_url + cells[0].find('a').attrib['href']
+        data[u'detail_uri'] = self.site_url + cells[0].find(u'a').attrib[u'href']
         logger.debug(data)
-        return (data['name'], data)
+        return (data[u'name'], data)
 
     
     def crawl_indices(self):
         page_num = 1
         while True:
-            url = 'http://www.rigzone.com/data/results.asp?P=%s&Region_ID=10' % page_num
-            page = urllib.request.urlopen(url)
+            url = u'http://www.rigzone.com/data/results.asp?P=%s&Region_ID=10' % page_num
+            page = urllib2.urlopen(url)
             tree = lxml.html.parse(page)
-            sel = CSSSelector('tr[style*="height:20px;"]')
+            sel = CSSSelector(u'tr[style*="height:20px;"]')
             rigrows = sel(tree)
             if len(rigrows) == 0:
                 raise StopIteration
 
             basedata = copy.copy(self.basedata)
-            basedata['source_uri'] = url
+            basedata[u'source_uri'] = url
             
             for row in rigrows:
                 yield self.unpack_rigrow(row, basedata)
@@ -158,7 +158,7 @@ class RigzoneBasic(Scraper):
 
             page_num += 1
             if page_num > 8:
-                logger.warn("""
+                logger.warn(u"""
                    many more pages than expected on Rigdata
                    aborting from fear of infinite loop""")
                 raise StopIteration
@@ -166,41 +166,41 @@ class RigzoneBasic(Scraper):
 class RigzoneFull(RigzoneBasic):
     
     def find_value(self, tree, label):
-        path = './/strong[contains(text(), "%s")]' % label
+        path = u'.//strong[contains(text(), "%s")]' % label
         label_node = tree.xpath(path)[0]
         value = label_node.getparent().getnext().text_content().strip()
         return value
     
     def scrape_detail_page(self, data):
-        logger.debug('making request for %s' % data['detail_uri'])
-        page = urllib.request.urlopen(data['detail_uri'])
-        logger.debug('opened page')
+        logger.debug(u'making request for %s' % data[u'detail_uri'])
+        page = urllib2.urlopen(data[u'detail_uri'])
+        logger.debug(u'opened page')
         tree = lxml.html.parse(page)
         
         # ignore labels we know from the index page:
         # name, manager, rig type, rated water depth, drilling depth
         labels = {
             # overview
-            'Rig Owner:': 'owner',
-            'Competitive Rig:': 'competitive_rig',            
-            ' Type:': 'ship_type', # may be rig type, drillship type,...
-            'Rig Design': 'rig_design',
+            u'Rig Owner:': u'owner',
+            u'Competitive Rig:': u'competitive_rig',            
+            u' Type:': u'ship_type', # may be rig type, drillship type,...
+            u'Rig Design': u'rig_design',
             
             # contract
-            'Operating Status:': 'operating_status',
-            'Operator:': 'operator',
+            u'Operating Status:': u'operating_status',
+            u'Operator:': u'operator',
             
             # location
-            'Region:': 'region',
-            'Country:': 'country',
-            'Current Water Depth:': 'current_water_depth',
+            u'Region:': u'region',
+            u'Country:': u'country',
+            u'Current Water Depth:': u'current_water_depth',
         }
         for l in (
-                'Classification:', 'Rig Design:', 'Shipyard:', 'Delivery Year:',
-                'Flag:', 'Derrick:', 'Drawworks:', 'Mud Pumps:', 'Top Drive:',
-                'Rotary Table:'
+                u'Classification:', u'Rig Design:', u'Shipyard:', u'Delivery Year:',
+                u'Flag:', u'Derrick:', u'Drawworks:', u'Mud Pumps:', u'Top Drive:',
+                u'Rotary Table:'
                 ):
-            labels[l] = l.strip(':').lower()
+            labels[l] = l.strip(u':').lower()
         for (searchterm, dbname) in labels.items():
             data[dbname] = self.find_value(tree, searchterm)
         
@@ -208,9 +208,9 @@ class RigzoneFull(RigzoneBasic):
         return data
 
     def add_item(self, rigID, data):
-        logger.debug('adding item')
+        logger.debug(u'adding item')
         item = copy.copy(self.basedata)
-        item['rig_id'] = rigID
+        item[u'rig_id'] = rigID
         item.update(data)
         data = self.scrape_detail_page(data)
         self.table.insert(item)
@@ -221,5 +221,5 @@ def run_all_scrapers():
         instance = scraper_cl()
         instance.run()
         
-if __name__ == '__main__':
+if __name__ == u'__main__':
     run_all_scrapers()

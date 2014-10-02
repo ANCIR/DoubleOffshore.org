@@ -2,3 +2,4 @@ lxml
 dataset
 cssselect
 psycopg2
+scrapekit
