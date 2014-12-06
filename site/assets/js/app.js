@@ -77,8 +77,12 @@
 
         /* Canvas setup */
 
-        var width = 1240;
-        var height = 900;
+        var width = 1024;
+        var height = 768;
+
+        var svg = d3.select("#canvas").append('svg')
+            .attr("height", height)
+            .attr("width", width);
 
         var _cola = cola.d3adaptor()
             .linkDistance(120)
@@ -88,10 +92,6 @@
         _cola
             .nodes(this.entities)
             .links(this.relations);
-
-        var svg = d3.select("#canvas").append('svg')
-            .attr("width", width)
-            .attr("height", height);
 
         _cola.on("tick", function() {
             var entity = svg.selectAll(".entity");
