@@ -87,7 +87,20 @@
 
         var svg = d3.select("#canvas").append('svg')
             .attr("height", height)
-            .attr("width", "100%");
+            .attr("width", "100%")
+            .attr("pointer-events", "all");
+
+        // set up zoom
+        svg.append("rect")
+            .attr("class", "background")
+            .attr("width", "100%")
+            .attr("height", "100%")
+            .call(d3.behavior.zoom().on("zoom", updateTransform));
+        svg = svg.append("g")
+            .attr("transform", "translate(0.0, 0.0) scale(1.0)");
+        function updateTransform() {
+            svg.attr("transform", "translate(" + d3.event.translate + ") scale(" + d3.event.scale + ")");
+        }
 
         var _cola = cola.d3adaptor()
             .linkDistance(120)
