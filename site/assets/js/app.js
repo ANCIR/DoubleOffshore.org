@@ -5,31 +5,30 @@
             $interpolateProvider.startSymbol('{[').endSymbol(']}');
         });
 
-    var color = d3.scale.category20();
-
     Relation = function(source, target, type) {
         this.source = source;
         this.target = target;
         this.type = type;
-
-        // rendering attributes
-        this.width = 2;
-        this.color = color(1);
     };
 
     Entity = function(name, type) {
         this.name = name;
         this.type = type;
 
-        // rendering attributes
-        this.fixed = false;
-        this.width = 40;
-        this.height = 40;
-        this.color = color(2);
-
         this.getLabel = function() {
             return this.name;
         };
+
+        this.resetCoordinates = function() {
+            this.x = 0.0;
+            this.y = 0.0;
+        };
+
+        this.setSize = function(w, h) {
+            this.width = w;
+            this.height = h;
+        };
+        this.setSize(60, 60);
     };
 
     renderEntities = function(entities, svg, _cola) {
@@ -43,7 +42,6 @@
             .attr("width", function (d) {return d.width;})
             .attr("height", function (d) {return d.height;})
             .attr("rx", 5).attr("ry", 5)
-            .style("fill", function (d) {return d.color;})
             .call(_cola.drag);
         label
             .data(entities)
@@ -52,7 +50,7 @@
             .attr("class", "label")
             .text(function (d) {return d.getLabel();})
             .call(_cola.drag);
-        _cola.start();
+        _cola.start(30, 30, 30);
     };
 
     renderRelations = function(relations, svg, _cola) {
@@ -61,9 +59,7 @@
             .data(relations)
             .enter()
             .append("line")
-            .attr("class", function (d) {return "relation relation-" + d.type;})
-            .attr("stroke-width", function (d) {return d.width;})
-            .style("stroke", function (d) {return d.color;});
+            .attr("class", function (d) {return "relation relation-" + d.type;});
         _cola.start();
     };
 
@@ -83,7 +79,7 @@
         /* Canvas setup */
 
         var width = $("#canvas").width();
-        var height = 768;
+        var height = 500;
 
         var svg = d3.select("#canvas").append('svg')
             .attr("height", height)
@@ -97,7 +93,7 @@
             .attr("height", "100%")
             .call(d3.behavior.zoom().on("zoom", updateTransform));
         svg = svg.append("g")
-            .attr("transform", "translate(0.0, 0.0) scale(1.0)");
+            .attr("transform", "translate(" + (width / 4) + "," + (height / 4) + ") scale(0.3)");
         function updateTransform() {
             svg.attr("transform", "translate(" + d3.event.translate + ") scale(" + d3.event.scale + ")");
         }
@@ -155,9 +151,7 @@
                 // add the company
                 if (!$scope.companies[obj.name]) {
                     company = new Entity(obj.name, "company");
-                    company.width = 60;
-                    company.height = 60;
-                    company.color = color(3);
+                    company.setSize(40, 40);
                     $scope.companies[obj.name] = {entity: company, roles: {}};
                     self.entities.push(company);
                 }
@@ -244,6 +238,7 @@
                 if (obj.type === "rig" && filterByLocation(obj) &&
                     filterByCompany(obj) && filterByFlag(obj)) {
                     entities.push(obj);
+                    obj.resetCoordinates();
                     entityMap[obj.id] = true;
                     var companies = [
                         $scope.companies[obj.owner],
@@ -255,6 +250,7 @@
                             return;
                         if (!entityMap[comp.entity.name]) {
                             entityMap[comp.entity.name] = true;
+                            comp.entity.resetCoordinates();
                             entities.push(comp.entity);
                         }
                     });
