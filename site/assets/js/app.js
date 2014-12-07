@@ -1,10 +1,9 @@
 (function(){
-    var app = angular.module("doubleoffshore", []);
-
-    /*
-    Query: show me all rigs [located|owned by|sailing under] X,
-    divvied up by [flag|company|..]
-    */
+    var app = angular
+        .module("doubleoffshore", [])
+        .config(function($interpolateProvider) {
+            $interpolateProvider.startSymbol('{[').endSymbol(']}');
+        });
 
     var color = d3.scale.category20();
 
@@ -69,20 +68,26 @@
     };
 
 
-    app.controller("NetworkController", function() {
+    app.controller("NetworkController", ['$scope', function($scope) {
 
         this.entities = [];
         this.relations = [];
-
+        $scope.locations = {};
+        $scope.companies = {};
+        $scope.flags = {};
+        $scope.currentLocation = "";
+        $scope.currentCompany = "";
+        $scope.currentFlag = "";
+        var self = this;
 
         /* Canvas setup */
 
-        var width = 1024;
+        var width = $("#canvas").width();
         var height = 768;
 
         var svg = d3.select("#canvas").append('svg')
             .attr("height", height)
-            .attr("width", width);
+            .attr("width", "100%");
 
         var _cola = cola.d3adaptor()
             .linkDistance(120)
@@ -116,36 +121,65 @@
 
         /* Load data */
 
-        var entities = this.entities;
-        var relations = this.relations;
+        /*
+        Query: show me all rigs [located|owned by|sailing under] X,
+        divvied up by [flag|company|..]
+        */
+
         d3.json("http://localhost:4000/data/rigs.json", function(error, data) {
-            var companyEntities = {};
+
+            self.data = data;
+
+            var cleanField = function(obj) {
+                if (entDat[obj] && typeof entDat[obj] === "string")
+                    entDat[obj] = entDat[obj].trim();
+            };
 
             var processCompanies = function(obj) {
                 if (!obj.name)
                     return;
                 var company;
-                if (!companyEntities[obj.name]) {
+                // add the company
+                if (!$scope.companies[obj.name]) {
                     company = new Entity(obj.name, "company");
                     company.width = 60;
                     company.height = 60;
                     company.color = color(3);
-                    companyEntities[obj.name] = company;
-                    entities.push(company);
+                    $scope.companies[obj.name] = {entity: company, roles: {}};
+                    self.entities.push(company);
                 }
                 else
-                    company = companyEntities[obj.name];
+                    company = $scope.companies[obj.name].entity;
+                $scope.companies[obj.name].roles[obj.type] = true;
                 var relation = new Relation(company, obj.rig, obj.type);
-                relations.push(relation);
+                self.relations.push(relation);
             };
 
             for (var i = 0; i < data.length; i++) {
                 var entDat = data[i];
+                // clean some fields
+                ['country', 'flag', 'owner', 'manager', 'operator']
+                    .forEach(cleanField);
                 // add the rig
-                if (entDat.owner !== "Seadrill Ltd")
-                    continue;
                 var rig = new Entity(entDat.name, "rig");
-                entities.push(rig);
+                // add some extra attributes
+                rig.id = entDat.id;
+                rig.owner = entDat.owner;
+                rig.operator = entDat.operator;
+                rig.manager = entDat.manager;
+                self.entities.push(rig);
+                // add the country
+                if (entDat.country) {
+                    if (!$scope.locations[entDat.country])
+                        $scope.locations[entDat.country] = {};
+                    $scope.locations[entDat.country][rig.id] = true;
+                }
+                // add the flag
+                if (entDat.flag) {
+                    if (!$scope.flags[entDat.flag])
+                        $scope.flags[entDat.flag] = {};
+                    $scope.flags[entDat.flag][rig.id] = true;
+                }
                 // add the controlling companies
                 var companies = [
                     {name: entDat.owner, type: "owner", rig: rig},
@@ -154,62 +188,12 @@
                 ];
                 companies.forEach(processCompanies);
             }
+            $scope.$apply();
 
-            if (svg !== undefined) {
-                var companyIndices = [];
-                var rigIndices = [];
-                for (i = 0; i < entities.length; i++) {
-                    var entity = entities[i];
-                    if (entity.type === "company")
-                        companyIndices.push(i);
-                    else
-                        rigIndices.push(i);
-                }
-                /*var mapOffsets = function(obj) {return {node: obj, offset: 0};};
-                var mapGaps = function(obj, i, arr) {return {
-                    axis: "x",
-                    left: (i == arr.length - 1 ? i - 1 : i),
-                    right: (i == arr.length - 1 ? i : i + 1),
-                    gap: 60,
-                };};
-                var constraints = companyIndices.map(mapGaps);
-                constraints.push.apply(constraints, rigIndices.map(mapGaps));
-                constraints.push.apply(constraints, [
-                    {
-                        type: "alignment",
-                        axis: "y",
-                        offsets: rigIndices.map(mapOffsets)
-                    },
-                    {
-                        type: "alignment",
-                        axis: "y",
-                        offsets: companyIndices.map(mapOffsets)
-                    }
-                ]);
-                _cola.constraints(constraints);
-                _cola.groups([
-                    {"leaves": companyIndices},
-                    {"leaves": rigIndices},
-                ]);*/
-                renderRelations(relations, svg, _cola);
-                renderEntities(entities, svg, _cola);
-            }
         });
 
 
         /* Functions to manipulate relations and entities */
-
-        this.addEntity = function() {
-            this.entities.push(new Entity("unnamed", "unknown"));
-            if (svg !== undefined)
-                renderEntities(this.entities, svg, _cola);
-        };
-
-        this.addRelation = function(source, target) {
-            this.relations.push(new Relation(source, target, "unknown"));
-            if (svg !== undefined)
-                renderRelations(this.relations, svg, _cola);
-        };
 
         this.lockEntities = function() {
             this.entities.forEach(function(obj) {obj.fixed = true;});
@@ -219,11 +203,72 @@
             this.entities.forEach(function(obj) {obj.fixed = false;});
         };
 
-        this.doFlowLayout = function() {
-            _cola.flowLayout("y", 30) // top-to-bottom
-                .symmetricDiffLinkLengths(60)
-                .start();
+        this.createNetwork = function() {
+            this.clearNetwork();
+
+            var filterByCompany;
+            var filterByLocation;
+            var filterByFlag;
+            if ($scope.currentCompany) {
+                filterByCompany = function(obj) {return obj.owner === $scope.currentCompany.entity.name;};
+            }
+            else
+                filterByCompany = function(obj) {return true;};
+            if ($scope.currentLocation) {
+                filterByLocation = function(obj) {return $scope.currentLocation[obj.id] ? true : false;};
+            }
+            else
+                filterByLocation = function(obj) {return true;};
+            if ($scope.currentFlag) {
+                filterByFlag = function(obj) {return $scope.currentFlag[obj.id] ? true : false;};
+            }
+            else
+                filterByFlag = function(obj) {return true;};
+
+            var entityMap = {};
+            var entities = [];
+            this.entities.forEach(function(obj) {
+                if (obj.type === "rig" && filterByLocation(obj) &&
+                    filterByCompany(obj) && filterByFlag(obj)) {
+                    entities.push(obj);
+                    entityMap[obj.id] = true;
+                    var companies = [
+                        $scope.companies[obj.owner],
+                        $scope.companies[obj.manager],
+                        $scope.companies[obj.operator]
+                    ];
+                    companies.forEach(function(comp) {
+                        if (comp === undefined)
+                            return;
+                        if (!entityMap[comp.entity.name]) {
+                            entityMap[comp.entity.name] = true;
+                            entities.push(comp.entity);
+                        }
+                    });
+                }
+            });
+            var relations = this.relations.filter(function(obj) {
+                return entityMap[obj.source.name] && entityMap[obj.target.id];
+            });
+
+            _cola
+                .nodes(entities)
+                .links(relations);
+            renderRelations(relations, svg, _cola);
+            renderEntities(entities, svg, _cola);
         };
-    });
+
+        this.clearNetwork = function() {
+            svg.selectAll('.relation').remove();
+            svg.selectAll('.entity').remove();
+            svg.selectAll('.label').remove();
+            _cola
+                .nodes([])
+                .links([])
+                .groups([])
+                .constraints([]);
+        };
+
+    }]);
 
 })();
