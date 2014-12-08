@@ -5,13 +5,13 @@
             $interpolateProvider.startSymbol('{[').endSymbol(']}');
         });
 
-    Relation = function(source, target, type) {
+    var Relation = function(source, target, type) {
         this.source = source;
         this.target = target;
         this.type = type;
     };
 
-    Entity = function(name, type) {
+    var Entity = function(name, type) {
         this.name = name;
         this.type = type;
 
@@ -31,7 +31,7 @@
         this.setSize(60, 60);
     };
 
-    renderEntities = function(entities, svg, _cola) {
+    function renderEntities(entities, svg, _cola) {
         var entity = svg.selectAll(".entity");
         var label = svg.selectAll(".label");
         entity
@@ -51,9 +51,9 @@
             .text(function (d) {return d.getLabel();})
             .call(_cola.drag);
         _cola.start(30, 30, 30);
-    };
+    }
 
-    renderRelations = function(relations, svg, _cola) {
+    function renderRelations(relations, svg, _cola) {
         var relation = svg.selectAll(".relation");
         relation
             .data(relations)
@@ -61,7 +61,34 @@
             .append("line")
             .attr("class", function (d) {return "relation relation-" + d.type;});
         _cola.start();
-    };
+    }
+
+    function createSVG(el, startTranslation, startScale) {
+        var width = $(el).width();
+        var height = 500;
+
+        var svg = d3.select(el).append('svg')
+            .attr("height", height)
+            .attr("width", "100%")
+            .attr("pointer-events", "all");
+
+        // set up zoom
+        var zoomer = d3.behavior.zoom();
+        var zoomhandle = svg.append("rect")
+            .attr("class", "background")
+            .attr("width", "100%")
+            .attr("height", "100%")
+            .call(zoomer.on("zoom", function(){
+                svg.attr("transform", "translate(" + d3.event.translate + ") scale(" + d3.event.scale + ")");
+            }));
+        svg = svg.append("g");
+        zoomer
+            .translate(startTranslation ? startTranslation : [width / 2, height / 2])
+            .scale(startScale ? startScale : 0.3)
+            .event(zoomhandle);
+
+        return [svg, [width, height]];
+    }
 
 
     app.controller("NetworkController", ['$scope', function($scope) {
@@ -76,37 +103,21 @@
         $scope.currentFlag = "";
         var self = this;
 
-        /* Canvas setup */
+        /* Network canvas setup */
 
-        var width = $("#canvas").width();
-        var height = 500;
-
-        var svg = d3.select("#canvas").append('svg')
-            .attr("height", height)
-            .attr("width", "100%")
-            .attr("pointer-events", "all");
-
-        // set up zoom
-        svg.append("rect")
-            .attr("class", "background")
-            .attr("width", "100%")
-            .attr("height", "100%")
-            .call(d3.behavior.zoom().on("zoom", updateTransform));
-        svg = svg.append("g")
-            .attr("transform", "translate(" + (width / 4) + "," + (height / 4) + ") scale(0.3)");
-        function updateTransform() {
-            svg.attr("transform", "translate(" + d3.event.translate + ") scale(" + d3.event.scale + ")");
-        }
+        var svgGraph = createSVG($("#canvas")[0]);
+        var sizeGraph = svgGraph[1];
+        svgGraph = svgGraph[0];
 
         var _cola = cola.d3adaptor()
             .linkDistance(120)
             .avoidOverlaps(true)
-            .size([width, height]);
+            .size(sizeGraph);
 
         _cola.on("tick", function() {
-            var entity = svg.selectAll(".entity");
-            var relation = svg.selectAll(".relation");
-            var label = svg.selectAll(".label");
+            var entity = svgGraph.selectAll(".entity");
+            var relation = svgGraph.selectAll(".relation");
+            var label = svgGraph.selectAll(".label");
 
             relation.attr("x1", function (d) {return d.source.x;})
                 .attr("y1", function (d) {return d.source.y;})
@@ -123,6 +134,11 @@
                  });
         });
 
+        /* Map setup */
+
+        var svgMap = createSVG($("#map")[0], [0, 0], 0.86);
+        var sizeMap = svgMap[1];
+        svgMap = svgMap[0];
 
         /* Load data */
 
@@ -197,6 +213,34 @@
 
         });
 
+        d3.json("data/world-50m.json", function(error, data) {
+            var projection = d3.geo.cylindricalEqualArea()
+                .parallel(45)
+                .scale(216)
+                .translate([sizeMap[0] / 2, sizeMap[1] / 2])
+                .precision(0.1);
+
+            var path = d3.geo.path()
+                .projection(projection);
+
+            var graticule = d3.geo.graticule();
+
+            svgMap.append("path")
+                .datum(graticule)
+                .attr("class", "graticule")
+                .attr("d", path);
+
+            svgMap.insert("path", ".graticule")
+                .datum(topojson.feature(data, data.objects.land))
+                .attr("class", "land")
+                .attr("d", path);
+
+            svgMap.insert("path", ".graticule")
+                .datum(topojson.mesh(data, data.objects.countries,
+                                     function(a, b) {return a !== b;}))
+                .attr("class", "boundary")
+                .attr("d", path);
+        });
 
         /* Functions to manipulate relations and entities */
 
@@ -261,14 +305,14 @@
             _cola
                 .nodes(entities)
                 .links(relations);
-            renderRelations(relations, svg, _cola);
-            renderEntities(entities, svg, _cola);
+            renderRelations(relations, svgGraph, _cola);
+            renderEntities(entities, svgGraph, _cola);
         };
 
         this.clearNetwork = function() {
-            svg.selectAll('.relation').remove();
-            svg.selectAll('.entity').remove();
-            svg.selectAll('.label').remove();
+            svgGraph.selectAll('.relation').remove();
+            svgGraph.selectAll('.entity').remove();
+            svgGraph.selectAll('.label').remove();
             _cola
                 .nodes([])
                 .links([])

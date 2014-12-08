@@ -18,7 +18,9 @@
     "jquery": "~2.1.1",
     "bootstrap": "~3.3.1",
     "webcola": "~3.0.1",
-    "d3": "~3.4.13"
+    "d3": "~3.4.13",
+    "topojson": "~1.6.18",
+    "d3-geo-projection": "http://d3js.org/d3.geo.projection.v0.min.js"
   },
   "install": {
     "path": {
@@ -30,7 +32,9 @@
       "jquery": "bower_components/jquery/dist/jquery.min.js",
       "bootstrap": "bower_components/bootstrap/dist/css/bootstrap.min.css",
       "webcola": "bower_components/webcola/WebCola/cola.v3.min.js",
-      "d3": "bower_components/d3/d3.min.js"
+      "d3": "bower_components/d3/d3.min.js",
+      "d3-geo-projection": "bower_components/d3-geo-projection/index.js",
+      "topojson": "bower_components/topojson/topojson.js"
     }
   }
 }
