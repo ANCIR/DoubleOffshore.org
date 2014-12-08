@@ -131,7 +131,7 @@
         divvied up by [flag|company|..]
         */
 
-        d3.json("http://localhost:4000/data/rigs.json", function(error, data) {
+        d3.json("data/rigs.json", function(error, data) {
 
             self.data = data;
 
