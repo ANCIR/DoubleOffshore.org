@@ -26,11 +26,11 @@
       "js": "assets/js"
     },
     "sources": {
-      "angular": "assets/angular/angular.min.js",
-      "jquery": "assets/jquery/dist/jquery.min.js",
-      "bootstrap": "assets/bootstrap/dist/css/boostrap.min.css",
-      "webcola": "assets/webcola/WebCola/cola.v3.min.js",
-      "d3": "assets/d3/d3.min.js"
+      "angular": "bower_components/angular/angular.min.js",
+      "jquery": "bower_components/jquery/dist/jquery.min.js",
+      "bootstrap": "bower_components/bootstrap/dist/css/bootstrap.min.css",
+      "webcola": "bower_components/webcola/WebCola/cola.v3.min.js",
+      "d3": "bower_components/d3/d3.min.js"
     }
   }
 }

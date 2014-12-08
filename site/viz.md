@@ -27,10 +27,10 @@ permalink: /viz/
     </div>
 </div>
 
-<script type="text/javascript" src="{{ "/assets/js/jquery.min.js" | prepend: site.baseurl }}"></script>
-<script type="text/javascript" src="{{ "/assets/js/angular.min.js" | prepend: site.baseurl }}"></script>
-<script type="text/javascript" src="{{ "/assets/js/d3.min.js" | prepend: site.baseurl }}"></script>
-<script type="text/javascript" src="{{ "/assets/js/cola.v3.min.js" | prepend: site.baseurl }}"></script>
+<script type="text/javascript" src="{{ "/assets/js/jquery/jquery.min.js" | prepend: site.baseurl }}"></script>
+<script type="text/javascript" src="{{ "/assets/js/angular/angular.min.js" | prepend: site.baseurl }}"></script>
+<script type="text/javascript" src="{{ "/assets/js/d3/d3.min.js" | prepend: site.baseurl }}"></script>
+<script type="text/javascript" src="{{ "/assets/js/webcola/cola.v3.min.js" | prepend: site.baseurl }}"></script>
 <script type="text/javascript" src="{{ "/assets/js/app.js" | prepend: site.baseurl }}"></script>
 
 <style>
