@@ -8,12 +8,11 @@ permalink: /viz/
     <div id="canvas" class="col-md-5"></div>
 
     <!-- map view -->
-    <div id="map" class="col-md-5">
-    </div>
+    <div id="map" class="col-md-5"></div>
 
     <!-- query controls -->
     <div class="pull-right col-md-2">
-        <form ng-submit="network.createNetwork()">
+        <form ng-submit="network.createViews()">
             Show me rigs<br />in
             <select ng-model="currentLocation" ng-options="country for (country, rigs) in locations">
                 <option value="">any country</option>
@@ -78,5 +77,12 @@ permalink: /viz/
       fill: none;
       stroke: #fff;
       stroke-width: .5px;
+    }
+
+    .marker1, .marker2 {}
+
+    .connection {
+        stroke: #C02942;
+        stroke-width: 0.5px;
     }
 </style>

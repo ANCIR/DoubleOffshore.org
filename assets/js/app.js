@@ -63,6 +63,41 @@
         _cola.start();
     }
 
+    function renderMapConnections(connections, svg) {
+        var connection = svg.selectAll(".connection");
+        var marker1 = svg.selectAll(".marker1");
+        var marker2 = svg.selectAll(".marker2");
+        connection
+            .data(connections)
+            .enter()
+            .append("line")
+            .attr("class", "connection")
+            .attr("x1", function (d) {return d.x1;})
+            .attr("y1", function (d) {return d.y1;})
+            .attr("x2", function (d) {return d.x2;})
+            .attr("y2", function (d) {return d.y2;});
+        marker1
+            .data(connections)
+            .enter()
+            .append("image")
+            .attr("class", "marker1")
+            .attr("xlink:href","img/map_marker.svg")
+            .attr("width", 12)
+            .attr("height", 12)
+            .attr("x", function (d) {return d.x1 - 6;})
+            .attr("y", function (d) {return d.y1 - 10;});
+        marker2
+            .data(connections)
+            .enter()
+            .append("image")
+            .attr("class", "marker2")
+            .attr("xlink:href","img/map_marker.svg")
+            .attr("width", 12)
+            .attr("height", 12)
+            .attr("x", function (d) {return d.x2 - 6;})
+            .attr("y", function (d) {return d.y2 - 10;});
+    }
+
     function createSVG(el, startTranslation, startScale) {
         var width = $(el).width();
         var height = 500;
@@ -139,6 +174,10 @@
         var svgMap = createSVG($("#map")[0], [-87, 0], 1.15);
         var sizeMap = svgMap[1];
         svgMap = svgMap[0];
+        var projection = d3.geo.mercator()
+            .scale((sizeMap[0] + 1) / 2 / Math.PI)
+            .translate([sizeMap[0] / 2, sizeMap[1] / 2])
+            .precision(0.1);
 
         /* Load data */
 
@@ -214,11 +253,6 @@
         });
 
         d3.json("data/world-50m.json", function(error, data) {
-            var projection = d3.geo.mercator()
-                .scale((sizeMap[0] + 1) / 2 / Math.PI)
-                .translate([sizeMap[0] / 2, sizeMap[1] / 2])
-                .precision(0.1);
-
             var path = d3.geo.path()
                 .projection(projection);
 
@@ -232,6 +266,15 @@
                                      function(a, b) {return a !== b;}))
                 .attr("class", "boundary")
                 .attr("d", path);
+        });
+
+        d3.json("data/country_centroids.json", function(error, data){
+            // swap coordinates around to be [longitude, latitude]
+            for (var loc in data) {
+                var coords = data[loc];
+                data[loc] = [coords[1], coords[0]];
+            }
+            self.country_centroids = data;
         });
 
         /* Functions to manipulate relations and entities */
@@ -310,6 +353,49 @@
                 .links([])
                 .groups([])
                 .constraints([]);
+        };
+
+        this.createMapConnections = function() {
+            this.clearMapConnections();
+
+            var connections = {};
+            _cola.nodes().forEach(function(obj) {
+                if (!obj.location || !obj.flag)
+                    return;
+                if (!connections[obj.location])
+                    connections[obj.location] = {};
+                if (!connections[obj.location][obj.flag])
+                    connections[obj.location][obj.flag] = 0;
+                connections[obj.location][obj.flag]++;
+            });
+
+            var flattened = [];
+            for (var loc in connections) {
+                for (var flag in connections[loc]) {
+                    var coords1 = projection(this.country_centroids[loc]);
+                    var coords2 = projection(this.country_centroids[flag]);
+                    flattened.push({
+                        total: connections[loc][flag],
+                        x1: coords1[0],
+                        y1: coords1[1],
+                        x2: coords2[0],
+                        y2: coords2[1]
+                    });
+                }
+            }
+
+            renderMapConnections(flattened, svgMap);
+        };
+
+        this.clearMapConnections = function() {
+            svgMap.selectAll('.connection').remove();
+            svgMap.selectAll('.marker1').remove();
+            svgMap.selectAll('.marker2').remove();
+        };
+
+        this.createViews = function() {
+            this.createNetwork();
+            this.createMapConnections();
         };
 
         this.groupByLocation = function() {
