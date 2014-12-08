@@ -103,10 +103,6 @@
             .avoidOverlaps(true)
             .size([width, height]);
 
-        _cola
-            .nodes(this.entities)
-            .links(this.relations);
-
         _cola.on("tick", function() {
             var entity = svg.selectAll(".entity");
             var relation = svg.selectAll(".relation");
@@ -174,6 +170,8 @@
                 rig.owner = entDat.owner;
                 rig.operator = entDat.operator;
                 rig.manager = entDat.manager;
+                rig.location = entDat.country;
+                rig.flag = entDat.flag;
                 self.entities.push(rig);
                 // add the country
                 if (entDat.country) {
@@ -276,6 +274,42 @@
                 .links([])
                 .groups([])
                 .constraints([]);
+        };
+
+        this.groupByLocation = function() {
+            var locations = {};
+            _cola.nodes().forEach(function(obj, i) {
+                if (!obj.location)
+                    return;
+                if (!locations[obj.location])
+                    locations[obj.location] = [];
+                locations[obj.location].push(i);
+                obj.resetCoordinates();
+            });
+            var groups = [];
+            for (var loc in locations)
+                groups.push({leaves: locations[loc]});
+            _cola
+                .groups(groups)
+                .start(30, 30, 30);
+        };
+
+        this.groupByFlags = function() {
+            var flags = {};
+            _cola.nodes().forEach(function(obj, i) {
+                if (!obj.flag)
+                    return;
+                if (!flags[obj.flag])
+                    flags[obj.flag] = [];
+                flags[obj.flag].push(i);
+                obj.resetCoordinates();
+            });
+            var groups = [];
+            for (var loc in flags)
+                groups.push({leaves: flags[loc]});
+            _cola
+                .groups(groups)
+                .start(30, 30, 30);
         };
 
     }]);

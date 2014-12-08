@@ -21,6 +21,9 @@ permalink: /viz/
             </select>
             <br/><input type="submit" class="btn btn-default" value="Show rigs" />
         </form>
+
+        <button ng-click="network.groupByLocation()" class="group-by btn btn-default">Group by rig location</button>
+        <button ng-click="network.groupByFlags()" class="group-by btn btn-default">Group by rig flag</button>
     </div>
 </div>
 
@@ -41,4 +44,6 @@ permalink: /viz/
     .entity-rig {fill: #53777A;}
     .entity-company {fill: #C02942;}
     text.label {fill: white;}
+
+    .btn {margin-top: 8px;}
 </style>
