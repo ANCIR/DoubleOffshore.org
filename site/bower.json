@@ -19,5 +19,18 @@
     "bootstrap": "~3.3.1",
     "webcola": "~3.0.1",
     "d3": "~3.4.13"
+  },
+  "install": {
+    "path": {
+      "css": "assets/css",
+      "js": "assets/js"
+    },
+    "sources": {
+      "angular": "assets/angular/angular.min.js",
+      "jquery": "assets/jquery/dist/jquery.min.js",
+      "bootstrap": "assets/bootstrap/dist/css/boostrap.min.css",
+      "webcola": "assets/webcola/WebCola/cola.v3.min.js",
+      "d3": "assets/d3/d3.min.js"
+    }
   }
 }
