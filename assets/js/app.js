@@ -136,7 +136,7 @@
 
         /* Map setup */
 
-        var svgMap = createSVG($("#map")[0], [0, 0], 0.86);
+        var svgMap = createSVG($("#map")[0], [-87, 0], 1.15);
         var sizeMap = svgMap[1];
         svgMap = svgMap[0];
 
@@ -214,28 +214,20 @@
         });
 
         d3.json("data/world-50m.json", function(error, data) {
-            var projection = d3.geo.cylindricalEqualArea()
-                .parallel(45)
-                .scale(216)
+            var projection = d3.geo.mercator()
+                .scale((sizeMap[0] + 1) / 2 / Math.PI)
                 .translate([sizeMap[0] / 2, sizeMap[1] / 2])
                 .precision(0.1);
 
             var path = d3.geo.path()
                 .projection(projection);
 
-            var graticule = d3.geo.graticule();
-
             svgMap.append("path")
-                .datum(graticule)
-                .attr("class", "graticule")
-                .attr("d", path);
-
-            svgMap.insert("path", ".graticule")
                 .datum(topojson.feature(data, data.objects.land))
                 .attr("class", "land")
                 .attr("d", path);
 
-            svgMap.insert("path", ".graticule")
+            svgMap.append("path")
                 .datum(topojson.mesh(data, data.objects.countries,
                                      function(a, b) {return a !== b;}))
                 .attr("class", "boundary")
