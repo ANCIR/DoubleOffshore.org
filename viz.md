@@ -14,15 +14,23 @@ permalink: /viz/
     <div class="pull-right col-md-2">
         <form ng-submit="network.createViews()">
             Show me rigs<br />in
-            <select ng-model="currentLocation" ng-options="country for (country, rigs) in locations">
+            <select ng-model="currentLocation" ng-options="country.key for country in locationValues">
                 <option value="">any country</option>
             </select>
             <br />that are owned by
-            <select ng-model="currentCompany" ng-options="company for (company, rigs) in companies">
+            <select ng-model="currentOwner" ng-options="company.key.name for company in ownerValues">
+                <option value="">anyone</option>
+            </select>
+            <br />and operated by
+            <select ng-model="currentOperator" ng-options="company.key.name for company in operatorValues">
+                <option value="">anyone</option>
+            </select>
+            <br />and managed by
+            <select ng-model="currentManager" ng-options="company.key.name for company in managerValues">
                 <option value="">anyone</option>
             </select>
             <br />and sailing under
-            <select ng-model="currentFlag" ng-options="flag for (flag, rigs) in flags">
+            <select ng-model="currentFlag" ng-options="flag.key for flag in flagValues">
                 <option value="">any country</option>
             </select>
             <br/><input type="submit" class="btn btn-default" value="Show rigs" />
@@ -39,6 +47,7 @@ permalink: /viz/
 <script type="text/javascript" src="{{ "/assets/js/d3-geo-projection/index.js" | prepend: site.baseurl }}"></script>
 <script type="text/javascript" src="{{ "/assets/js/topojson/topojson.js" | prepend: site.baseurl }}"></script>
 <script type="text/javascript" src="{{ "/assets/js/webcola/cola.v3.min.js" | prepend: site.baseurl }}"></script>
+<script type="text/javascript" src="{{ "/assets/js/crossfilter/crossfilter.min.js" | prepend: site.baseurl }}"></script>
 <script type="text/javascript" src="{{ "/assets/js/app.js" | prepend: site.baseurl }}"></script>
 
 <style>

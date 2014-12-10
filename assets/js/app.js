@@ -130,13 +130,28 @@
 
         this.entities = [];
         this.relations = [];
-        $scope.locations = {};
-        $scope.companies = {};
-        $scope.flags = {};
-        $scope.currentLocation = "";
-        $scope.currentCompany = "";
-        $scope.currentFlag = "";
         var self = this;
+        // DATA to be filtered/grouped
+        this.rigs = crossfilter();
+        this.companies = crossfilter();
+        // DIMENSIONS
+        this.rigsByFlag = this.rigs.dimension(function(d) {return d.raw_flag;});
+        this.rigsByLocation = this.rigs.dimension(function(d) {return d.raw_country;});
+        this.rigsByManager = this.rigs.dimension(function(d) {return d.manager;});
+        this.rigsByOperator = this.rigs.dimension(function(d) {return d.operator;});
+        this.rigsByOwner = this.rigs.dimension(function(d) {return d.owner;});
+        // FILTER VALUES
+        $scope.flagValues = [];
+        $scope.locationValues = [];
+        $scope.managerValues = [];
+        $scope.operatorValues = [];
+        $scope.ownerValues = [];
+        $scope.currentFlag = "";
+        $scope.currentLocation = "";
+        $scope.currentManager = "";
+        $scope.currentOperator = "";
+        $scope.currentOwner = "";
+        $scope.companies = {};
 
         /* Network canvas setup */
 
@@ -181,18 +196,15 @@
 
         /* Load data */
 
-        /*
-        Query: show me all rigs [located|owned by|sailing under] X,
-        divvied up by [flag|company|..]
-        */
-
         d3.json("data/rigs.json", function(error, data) {
 
             self.data = data;
+            var uniqueCompanies = {};
 
-            var cleanField = function(obj) {
-                if (entDat[obj] && typeof entDat[obj] === "string")
-                    entDat[obj] = entDat[obj].trim();
+            var clean = function(data) {
+                for (var key in data)
+                    if (data[key] && typeof data[key] === "string")
+                        data[key] = data[key].trim();
             };
 
             var processCompanies = function(obj) {
@@ -200,46 +212,30 @@
                     return;
                 var company;
                 // add the company
-                if (!$scope.companies[obj.name]) {
+                if (!uniqueCompanies[obj.name]) {
                     company = new Entity(obj.name, "company");
                     company.setSize(40, 40);
-                    $scope.companies[obj.name] = {entity: company, roles: {}};
+                    uniqueCompanies[obj.name] = company;
                     self.entities.push(company);
                 }
                 else
-                    company = $scope.companies[obj.name].entity;
-                $scope.companies[obj.name].roles[obj.type] = true;
+                    company = uniqueCompanies[obj.name];
+                // add the related company directly to the rig entity
+                obj.rig[obj.type] = company;
                 var relation = new Relation(company, obj.rig, obj.type);
                 self.relations.push(relation);
             };
 
             for (var i = 0; i < data.length; i++) {
                 var entDat = data[i];
-                // clean some fields
-                ['country', 'flag', 'owner', 'manager', 'operator']
-                    .forEach(cleanField);
+                // trim some strings
+                clean(entDat);
                 // add the rig
                 var rig = new Entity(entDat.name, "rig");
-                // add some extra attributes
-                rig.id = entDat.id;
-                rig.owner = entDat.owner;
-                rig.operator = entDat.operator;
-                rig.manager = entDat.manager;
-                rig.location = entDat.country;
-                rig.flag = entDat.flag;
                 self.entities.push(rig);
-                // add the country
-                if (entDat.country) {
-                    if (!$scope.locations[entDat.country])
-                        $scope.locations[entDat.country] = {};
-                    $scope.locations[entDat.country][rig.id] = true;
-                }
-                // add the flag
-                if (entDat.flag) {
-                    if (!$scope.flags[entDat.flag])
-                        $scope.flags[entDat.flag] = {};
-                    $scope.flags[entDat.flag][rig.id] = true;
-                }
+                // add all attributes prefixed with 'raw_'
+                for (var key in entDat)
+                    rig['raw_' + key] = entDat[key];
                 // add the controlling companies
                 var companies = [
                     {name: entDat.owner, type: "owner", rig: rig},
@@ -248,6 +244,14 @@
                 ];
                 companies.forEach(processCompanies);
             }
+
+            self.rigs.add(self.entities.filter(function(obj) {return obj.type === "rig";}));
+            self.companies.add(self.entities.filter(function(obj) {return obj.type === "company";}));
+            $scope.flagValues = self.rigsByFlag.group().all();
+            $scope.locationValues = self.rigsByLocation.group().all();
+            $scope.managerValues = self.rigsByManager.group().all();
+            $scope.operatorValues = self.rigsByOperator.group().all();
+            $scope.ownerValues = self.rigsByOwner.group().all();
             $scope.$apply();
 
         });
