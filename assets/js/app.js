@@ -137,21 +137,20 @@
         // DIMENSIONS
         this.rigsByFlag = this.rigs.dimension(function(d) {return d.raw_flag;});
         this.rigsByLocation = this.rigs.dimension(function(d) {return d.raw_country;});
-        this.rigsByManager = this.rigs.dimension(function(d) {return d.manager;});
-        this.rigsByOperator = this.rigs.dimension(function(d) {return d.operator;});
-        this.rigsByOwner = this.rigs.dimension(function(d) {return d.owner;});
+        this.rigsByManager = this.rigs.dimension(function(d) {return d.raw_manager;});
+        this.rigsByOperator = this.rigs.dimension(function(d) {return d.raw_operator;});
+        this.rigsByOwner = this.rigs.dimension(function(d) {return d.raw_owner;});
         // FILTER VALUES
         $scope.flagValues = [];
         $scope.locationValues = [];
         $scope.managerValues = [];
         $scope.operatorValues = [];
         $scope.ownerValues = [];
-        $scope.currentFlag = "";
-        $scope.currentLocation = "";
-        $scope.currentManager = "";
-        $scope.currentOperator = "";
-        $scope.currentOwner = "";
-        $scope.companies = {};
+        $scope.currentFlag = {selected: {key: null}};
+        $scope.currentLocation = {selected: {key: null}};
+        $scope.currentManager = {selected: {key: null}};
+        $scope.currentOperator = {selected: {key: null}};
+        $scope.currentOwner = {selected: {key: null}};
 
         /* Network canvas setup */
 
@@ -247,11 +246,19 @@
 
             self.rigs.add(self.entities.filter(function(obj) {return obj.type === "rig";}));
             self.companies.add(self.entities.filter(function(obj) {return obj.type === "company";}));
-            $scope.flagValues = self.rigsByFlag.group().all();
-            $scope.locationValues = self.rigsByLocation.group().all();
-            $scope.managerValues = self.rigsByManager.group().all();
-            $scope.operatorValues = self.rigsByOperator.group().all();
-            $scope.ownerValues = self.rigsByOwner.group().all();
+            var groups = [
+                self.rigsByFlag.group(),
+                self.rigsByLocation.group(),
+                self.rigsByManager.group(),
+                self.rigsByOperator.group(),
+                self.rigsByOwner.group()
+            ];
+            $scope.flagValues = groups[0].all();
+            $scope.locationValues = groups[1].all();
+            $scope.managerValues = groups[2].all();
+            $scope.operatorValues = groups[3].all();
+            $scope.ownerValues = groups[4].all();
+            groups.forEach(function(obj){obj.dispose();});
             $scope.$apply();
 
         });
@@ -294,51 +301,35 @@
         this.createNetwork = function() {
             this.clearNetwork();
 
-            var filterByCompany;
-            var filterByLocation;
-            var filterByFlag;
-            if ($scope.currentCompany) {
-                filterByCompany = function(obj) {return obj.owner === $scope.currentCompany.entity.name;};
-            }
-            else
-                filterByCompany = function(obj) {return true;};
-            if ($scope.currentLocation) {
-                filterByLocation = function(obj) {return $scope.currentLocation[obj.id] ? true : false;};
-            }
-            else
-                filterByLocation = function(obj) {return true;};
-            if ($scope.currentFlag) {
-                filterByFlag = function(obj) {return $scope.currentFlag[obj.id] ? true : false;};
-            }
-            else
-                filterByFlag = function(obj) {return true;};
+            // apply all filters
+            this.rigsByFlag.filter($scope.currentFlag.selected.key);
+            this.rigsByLocation.filter($scope.currentLocation.selected.key);
+            this.rigsByManager.filter($scope.currentManager.selected.key);
+            this.rigsByOperator.filter($scope.currentOperator.selected.key);
+            this.rigsByOwner.filter($scope.currentOwner.selected.key);
+            var entities = this.rigsByLocation.top(Infinity);
 
             var entityMap = {};
-            var entities = [];
-            this.entities.forEach(function(obj) {
-                if (obj.type === "rig" && filterByLocation(obj) &&
-                    filterByCompany(obj) && filterByFlag(obj)) {
-                    entities.push(obj);
-                    obj.resetCoordinates();
-                    entityMap[obj.id] = true;
-                    var companies = [
-                        $scope.companies[obj.owner],
-                        $scope.companies[obj.manager],
-                        $scope.companies[obj.operator]
-                    ];
-                    companies.forEach(function(comp) {
-                        if (comp === undefined)
-                            return;
-                        if (!entityMap[comp.entity.name]) {
-                            entityMap[comp.entity.name] = true;
-                            comp.entity.resetCoordinates();
-                            entities.push(comp.entity);
-                        }
-                    });
-                }
+            entities.forEach(function(obj) {
+                obj.resetCoordinates();
+                entityMap[obj.raw_id] = true;
+                var companies = [
+                    obj.owner,
+                    obj.manager,
+                    obj.operator
+                ];
+                companies.forEach(function(company) {
+                    if (company === undefined)
+                        return;
+                    if (!entityMap[company.name]) {
+                        entityMap[company.name] = true;
+                        company.resetCoordinates();
+                        entities.push(company);
+                    }
+                });
             });
             var relations = this.relations.filter(function(obj) {
-                return entityMap[obj.source.name] && entityMap[obj.target.id];
+                return entityMap[obj.source.name] && entityMap[obj.target.raw_id];
             });
 
             _cola
@@ -364,13 +355,13 @@
 
             var connections = {};
             _cola.nodes().forEach(function(obj) {
-                if (!obj.location || !obj.flag)
+                if (!obj.raw_country || !obj.raw_flag)
                     return;
-                if (!connections[obj.location])
-                    connections[obj.location] = {};
-                if (!connections[obj.location][obj.flag])
-                    connections[obj.location][obj.flag] = 0;
-                connections[obj.location][obj.flag]++;
+                if (!connections[obj.raw_country])
+                    connections[obj.raw_country] = {};
+                if (!connections[obj.raw_country][obj.raw_flag])
+                    connections[obj.raw_country][obj.raw_flag] = 0;
+                connections[obj.raw_country][obj.raw_flag]++;
             });
 
             var flattened = [];

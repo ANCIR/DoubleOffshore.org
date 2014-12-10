@@ -14,23 +14,23 @@ permalink: /viz/
     <div class="pull-right col-md-2">
         <form ng-submit="network.createViews()">
             Show me rigs<br />in
-            <select ng-model="currentLocation" ng-options="country.key for country in locationValues">
+            <select ng-model="currentLocation.selected" ng-options="country.key for country in locationValues">
                 <option value="">any country</option>
             </select>
             <br />that are owned by
-            <select ng-model="currentOwner" ng-options="company.key.name for company in ownerValues">
+            <select ng-model="currentOwner.selected" ng-options="company.key for company in ownerValues">
                 <option value="">anyone</option>
             </select>
             <br />and operated by
-            <select ng-model="currentOperator" ng-options="company.key.name for company in operatorValues">
+            <select ng-model="currentOperator.selected" ng-options="company.key for company in operatorValues">
                 <option value="">anyone</option>
             </select>
             <br />and managed by
-            <select ng-model="currentManager" ng-options="company.key.name for company in managerValues">
+            <select ng-model="currentManager.selected" ng-options="company.key for company in managerValues">
                 <option value="">anyone</option>
             </select>
             <br />and sailing under
-            <select ng-model="currentFlag" ng-options="flag.key for flag in flagValues">
+            <select ng-model="currentFlag.selected" ng-options="flag.key for flag in flagValues">
                 <option value="">any country</option>
             </select>
             <br/><input type="submit" class="btn btn-default" value="Show rigs" />
