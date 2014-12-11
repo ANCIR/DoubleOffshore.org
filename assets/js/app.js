@@ -1,6 +1,6 @@
 (function(){
     var app = angular
-        .module("doubleoffshore", [])
+        .module("doubleoffshore", ["multi-select"])
         .config(function($interpolateProvider) {
             $interpolateProvider.startSymbol('{[').endSymbol(']}');
         });
@@ -159,11 +159,6 @@
         $scope.managerValues = [];
         $scope.operatorValues = [];
         $scope.ownerValues = [];
-        $scope.currentFlag = {selected: {key: null}};
-        $scope.currentLocation = {selected: {key: null}};
-        $scope.currentManager = {selected: {key: null}};
-        $scope.currentOperator = {selected: {key: null}};
-        $scope.currentOwner = {selected: {key: null}};
 
         /* Network canvas setup */
 
@@ -269,11 +264,12 @@
                 self.rigsByOperator.group(),
                 self.rigsByOwner.group()
             ];
-            $scope.flagValues = groups[0].all();
-            $scope.locationValues = groups[1].all();
-            $scope.managerValues = groups[2].all();
-            $scope.operatorValues = groups[3].all();
-            $scope.ownerValues = groups[4].all();
+            var makeOptions = function(obj) {return {name: obj.key, ticked: false};};
+            $scope.flagValues = groups[0].all().map(makeOptions);
+            $scope.locationValues = groups[1].all().map(makeOptions);
+            $scope.managerValues = groups[2].all().map(makeOptions);
+            $scope.operatorValues = groups[3].all().map(makeOptions);
+            $scope.ownerValues = groups[4].all().map(makeOptions);
             groups.forEach(function(obj){obj.dispose();});
             $scope.$apply();
 
@@ -314,17 +310,39 @@
             this.entities.forEach(function(obj) {obj.fixed = false;});
         };
 
+        this.applyActiveFilters = function() {
+            function getSelectedValues(values) {
+                var selected = {};
+                values
+                    .filter(function(obj) {return obj.ticked;})
+                    .forEach(function(obj) {selected[obj.name] = true;});
+                return selected;
+            }
+
+            function oneOf(selected) {
+                return function(val) {return selected[val];};
+            }
+
+            // apply all filters
+            [
+                [this.rigsByFlag, $scope.flagValues],
+                [this.rigsByLocation, $scope.locationValues],
+                [this.rigsByManager, $scope.managerValues],
+                [this.rigsByOperator, $scope.operatorValues],
+                [this.rigsByOwner, $scope.ownerValues]
+            ].forEach(function(arr){
+                arr[0].filterAll();
+                var selected = getSelectedValues(arr[1]);
+                if (!($.isEmptyObject(selected)))
+                    arr[0].filterFunction(oneOf(selected));
+            });
+        };
+
         this.createNetwork = function() {
             this.clearNetwork();
 
-            // apply all filters
-            this.rigsByFlag.filter($scope.currentFlag.selected.key);
-            this.rigsByLocation.filter($scope.currentLocation.selected.key);
-            this.rigsByManager.filter($scope.currentManager.selected.key);
-            this.rigsByOperator.filter($scope.currentOperator.selected.key);
-            this.rigsByOwner.filter($scope.currentOwner.selected.key);
+            this.applyActiveFilters();
             var entities = this.rigsByLocation.top(Infinity);
-
             var entityMap = {};
             entities.forEach(function(obj) {
                 obj.resetCoordinates();

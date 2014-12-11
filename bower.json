@@ -21,7 +21,8 @@
     "d3": "~3.4.13",
     "topojson": "~1.6.18",
     "d3-geo-projection": "http://d3js.org/d3.geo.projection.v0.min.js",
-    "crossfilter": "~1.3.11"
+    "crossfilter": "~1.3.11",
+    "angular-multi-select": "~2.0.2"
   },
   "install": {
     "path": {
@@ -36,7 +37,11 @@
       "d3": "bower_components/d3/d3.min.js",
       "d3-geo-projection": "bower_components/d3-geo-projection/index.js",
       "topojson": "bower_components/topojson/topojson.js",
-      "crossfilter": "bower_components/crossfilter/crossfilter.min.js"
+      "crossfilter": "bower_components/crossfilter/crossfilter.min.js",
+      "angular-multi-select": [
+        "bower_components/angular-multi-select/angular-multi-select.js",
+        "bower_components/angular-multi-select/angular-multi-select.css"
+      ]
     }
   }
 }
