@@ -31,16 +31,18 @@
         this.setSize(60, 60);
     };
 
-    function renderEntities(entities, svg, _cola) {
+    function renderEntities(entities, svg, _cola, padding) {
         var entity = svg.selectAll(".entity");
         var label = svg.selectAll(".label");
+        if (!padding)
+            padding = 0;
         entity
             .data(entities)
             .enter()
             .append("rect")
             .attr("class", function (d) {return "entity entity-" + d.type;})
-            .attr("width", function (d) {return d.width;})
-            .attr("height", function (d) {return d.height;})
+            .attr("width", function (d) {return d.width - 2 * padding;})
+            .attr("height", function (d) {return d.height - 2 * padding;})
             .attr("rx", 5).attr("ry", 5)
             .call(_cola.drag);
         label
@@ -168,6 +170,7 @@
         var svgGraph = createSVG($("#canvas")[0]);
         var sizeGraph = svgGraph[1];
         svgGraph = svgGraph[0];
+        var nodePadding = 4;
 
         var _cola = cola.d3adaptor()
             .linkDistance(120)
@@ -182,8 +185,8 @@
                 .attr("y2", function (d) {return d.target.y;});
 
             svgGraph.selectAll(".entity")
-                .attr("x", function (d) {return d.x - d.width / 2;})
-                .attr("y", function (d) {return d.y - d.height / 2;});
+                .attr("x", function (d) {return d.x - d.width / 2 + nodePadding;})
+                .attr("y", function (d) {return d.y - d.height / 2 + nodePadding;});
 
             svgGraph.selectAll(".label")
                 .attr("x", function (d) {return d.x;})
@@ -352,7 +355,7 @@
                 .nodes(entities)
                 .links(relations);
             renderRelations(relations, svgGraph, _cola);
-            renderEntities(entities, svgGraph, _cola);
+            renderEntities(entities, svgGraph, _cola, nodePadding);
         };
 
         this.clearNetwork = function() {
