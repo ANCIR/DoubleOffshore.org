@@ -170,7 +170,7 @@
         var svgGraph = createSVG($("#canvas")[0]);
         var sizeGraph = svgGraph[1];
         svgGraph = svgGraph[0];
-        var nodePadding = 4;
+        var nodePadding = 8;
 
         var _cola = cola.d3adaptor()
             .linkDistance(120)
@@ -189,11 +189,8 @@
                 .attr("y", function (d) {return d.y - d.height / 2 + nodePadding;});
 
             svgGraph.selectAll(".label")
-                .attr("x", function (d) {return d.x;})
-                 .attr("y", function (d) {
-                     var h = this.getBBox().height;
-                     return d.y + h/4;
-                 });
+                .attr("x", function (d) {return d.x - d.width / 2 + nodePadding;})
+                 .attr("y", function (d) {return d.y + d.height / 2 - nodePadding + this.getBBox().height;});
 
             svgGraph.selectAll(".group")
                 .attr("x", function (d) {return d.bounds.x;})
@@ -232,7 +229,7 @@
                 // add the company
                 if (!uniqueCompanies[obj.name]) {
                     company = new Entity(obj.name, "company");
-                    company.setSize(40, 40);
+                    company.setSize(50, 50);
                     uniqueCompanies[obj.name] = company;
                     self.entities.push(company);
                 }

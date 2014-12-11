@@ -57,20 +57,31 @@ permalink: /viz/
         stroke: #ECD078;
         stroke-width: 2px;
     }
-
     .relation-manager {stroke: #D95B43;}
     .relation-operator {stroke: #542437;}
-    .entity-rig {fill: #53777A;}
-    .entity-company {fill: #C02942;}
+
+    .entity {stroke-width: 1px;}
+    .entity-rig {
+        fill: #53777A;
+        stroke: rgba(110, 158, 162, 1.0);
+    }
+    .entity-company {
+        fill: #C02942;
+        stroke: rgba(255, 59, 88, 1.0);
+    }
+
     .group {
         fill: rgba(255, 255, 255, 0.25);
-        stroke: white;
+        stroke: rgba(255, 255, 255, 0.33);
         stroke-width: 1px;
     }
 
-    /* Widgets style */
+    text.label {
+        fill: white;
+        font-size: 8px;
+    }
 
-    text.label {fill: white;}
+    /* Widgets style */
 
     .btn {margin-top: 8px;}
 
