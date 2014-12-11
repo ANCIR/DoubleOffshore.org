@@ -36,8 +36,8 @@ permalink: /viz/
             <br/><input type="submit" class="btn btn-default" value="Show rigs" />
         </form>
 
-        <button ng-click="network.groupByLocation()" class="group-by btn btn-default">Group by rig location</button>
-        <button ng-click="network.groupByFlags()" class="group-by btn btn-default">Group by rig flag</button>
+        <button ng-click="network.groupBy('raw_country')" class="group-by btn btn-default">Group by rig location</button>
+        <button ng-click="network.groupBy('raw_flag')" class="group-by btn btn-default">Group by rig flag</button>
     </div>
 </div>
 
@@ -62,6 +62,11 @@ permalink: /viz/
     .relation-operator {stroke: #542437;}
     .entity-rig {fill: #53777A;}
     .entity-company {fill: #C02942;}
+    .group {
+        fill: rgba(255, 255, 255, 0.25);
+        stroke: white;
+        stroke-width: 1px;
+    }
 
     /* Widgets style */
 

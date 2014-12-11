@@ -63,6 +63,17 @@
         _cola.start();
     }
 
+    function renderGroups(groups, svg, _cola) {
+        var group = svg.selectAll(".group");
+        group
+            .data(groups)
+            .enter()
+            .insert("rect", ".relation")
+            .attr("rx", 5).attr("ry", 5)
+            .attr("class", "group");
+        _cola.start(30, 30, 30);
+    }
+
     function renderMapConnections(connections, svg) {
         var connection = svg.selectAll(".connection");
         var marker1 = svg.selectAll(".marker1");
@@ -164,23 +175,28 @@
             .size(sizeGraph);
 
         _cola.on("tick", function() {
-            var entity = svgGraph.selectAll(".entity");
-            var relation = svgGraph.selectAll(".relation");
-            var label = svgGraph.selectAll(".label");
-
-            relation.attr("x1", function (d) {return d.source.x;})
+            svgGraph.selectAll(".relation")
+                .attr("x1", function (d) {return d.source.x;})
                 .attr("y1", function (d) {return d.source.y;})
                 .attr("x2", function (d) {return d.target.x;})
                 .attr("y2", function (d) {return d.target.y;});
 
-            entity.attr("x", function (d) {return d.x - d.width / 2;})
+            svgGraph.selectAll(".entity")
+                .attr("x", function (d) {return d.x - d.width / 2;})
                 .attr("y", function (d) {return d.y - d.height / 2;});
 
-            label.attr("x", function (d) {return d.x;})
+            svgGraph.selectAll(".label")
+                .attr("x", function (d) {return d.x;})
                  .attr("y", function (d) {
                      var h = this.getBBox().height;
                      return d.y + h/4;
                  });
+
+            svgGraph.selectAll(".group")
+                .attr("x", function (d) {return d.bounds.x;})
+                .attr("y", function (d) {return d.bounds.y;})
+                .attr("width", function (d) {return d.bounds.width();})
+                .attr("height", function (d) {return d.bounds.height();});
         });
 
         /* Map setup */
@@ -393,40 +409,24 @@
             this.createMapConnections();
         };
 
-        this.groupByLocation = function() {
-            var locations = {};
-            _cola.nodes().forEach(function(obj, i) {
-                if (!obj.location)
-                    return;
-                if (!locations[obj.location])
-                    locations[obj.location] = [];
-                locations[obj.location].push(i);
-                obj.resetCoordinates();
-            });
-            var groups = [];
-            for (var loc in locations)
-                groups.push({leaves: locations[loc]});
-            _cola
-                .groups(groups)
-                .start(30, 30, 30);
-        };
+        this.groupBy = function(dimension) {
+            svgGraph.selectAll('.group').remove();
 
-        this.groupByFlags = function() {
-            var flags = {};
+            var values = {};
             _cola.nodes().forEach(function(obj, i) {
-                if (!obj.flag)
+                if (!obj[dimension])
                     return;
-                if (!flags[obj.flag])
-                    flags[obj.flag] = [];
-                flags[obj.flag].push(i);
+                if (!values[obj[dimension]])
+                    values[obj[dimension]] = [];
+                values[obj[dimension]].push(i);
                 obj.resetCoordinates();
             });
             var groups = [];
-            for (var loc in flags)
-                groups.push({leaves: flags[loc]});
-            _cola
-                .groups(groups)
-                .start(30, 30, 30);
+            for (var value in values)
+                groups.push({leaves: values[value]});
+
+            _cola.groups(groups);
+            renderGroups(groups, svgGraph, _cola);
         };
 
     }]);
