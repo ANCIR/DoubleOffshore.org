@@ -22,7 +22,8 @@
     "topojson": "~1.6.18",
     "d3-geo-projection": "http://d3js.org/d3.geo.projection.v0.min.js",
     "crossfilter": "~1.3.11",
-    "angular-multi-select": "~2.0.2"
+    "angular-multi-select": "~2.0.2",
+    "d3-plugins": "*"
   },
   "install": {
     "path": {
@@ -41,7 +42,8 @@
       "angular-multi-select": [
         "bower_components/angular-multi-select/angular-multi-select.js",
         "bower_components/angular-multi-select/angular-multi-select.css"
-      ]
+      ],
+      "d3-plugins": "bower_components/d3-plugins/sankey/sankey.js"
     }
   }
 }
