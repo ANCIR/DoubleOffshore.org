@@ -7,28 +7,38 @@ permalink: /explore/
     <!-- query controls -->
     <div class="col-md-2">
         <form ng-submit="network.createViews()" role="form">
-            Show me rigs in
+            <span class="text-muted">Select oil rigs by choosing 0 or more filtering criteria and clicking <em>Show rigs</em>.</span>
+            <label>Locations:</label>
             <div multi-select input-model="locationValues" button-label="name" item-label="name" tick-property="ticked" default-label="any country"></div>
-            <br />that are owned by
+            <label>Owners:</label>
             <div multi-select input-model="ownerValues" button-label="name" item-label="name" tick-property="ticked" default-label="anyone"></div>
-            <br />and operated by
+            <label>Operators:</label>
             <div multi-select input-model="operatorValues" button-label="name" item-label="name" tick-property="ticked" default-label="anyone"></div>
-            <br />and managed by
+            <label>Managers:</label>
             <div multi-select input-model="managerValues" button-label="name" item-label="name" tick-property="ticked" default-label="anyone"></div>
-            <br />and sailing under
+            <label>Flags:</label>
             <div multi-select input-model="flagValues" button-label="name" item-label="name" tick-property="ticked" default-label="any country"></div>
-            <br/><input type="submit" class="btn btn-default" value="Show rigs" />
+            <br/><input type="submit" class="btn btn-primary" value="Show rigs" />
         </form>
-
-        <button ng-click="network.groupBy('raw_country')" class="group-by btn btn-default">Group by rig location</button>
-        <button ng-click="network.groupBy('raw_flag')" class="group-by btn btn-default">Group by rig flag</button>
     </div>
 
     <!-- network canvas -->
-    <div id="canvas" class="col-md-5"></div>
+    <div class="col-md-5">
+        <div id="canvas"></div>
+        <div>
+            <form class="form-inline">
+                <label>Group by </label>
+                <select ng-model="groupByField" ng-options="key for (key, val) in groupByOptions" class="form-control">
+                    <option value="">None</option>
+                </select>
+            </form>
+        </div>
+    </div>
 
     <!-- map view -->
-    <div id="map" class="col-md-5"></div>
+    <div class="col-md-5">
+        <div id="map"></div>
+    </div>
 </div>
 
 <script type="text/javascript" src="{{ "/assets/js/jquery/jquery.min.js" | prepend: site.baseurl }}"></script>
@@ -82,7 +92,26 @@ permalink: /explore/
 
     /* Widgets style */
 
-    .btn {margin-top: 8px;}
+    label {margin-top: 12px;}
+
+    .multiSelect > .multiSelectButton,
+    .multiSelect > .checkboxLayer,
+    .multiSelect .checkBoxContainer,
+    .multiSelect .multiSelectItem,
+    .multiSelect .multiSelectItem * {
+        width: 100%;
+    }
+
+    .multiSelect > .multiSelectButton {
+        text-align: left;
+    }
+
+    .multiSelect .multiSelectItem span {
+        display: inline-block;
+        text-overflow: ellipsis;
+        overflow: hidden;
+        white-space: nowrap;
+    }
 
     /* Map style */
 

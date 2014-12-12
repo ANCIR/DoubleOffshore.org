@@ -159,6 +159,17 @@
         $scope.managerValues = [];
         $scope.operatorValues = [];
         $scope.ownerValues = [];
+        // GROUPING VALUES
+        $scope.groupByOptions = {
+            'location': 'raw_country',
+            'flag': 'raw_flag',
+            'drilling depth': 'raw_drilling_depth',
+            'water depth': 'raw_rated_water_depth',
+            'owner': 'raw_owner',
+            'operator': 'raw_operator',
+            'manager': 'raw_manager'
+        };
+        $scope.groupByField = null;
 
         /* Network canvas setup */
 
@@ -273,6 +284,8 @@
             groups.forEach(function(obj){obj.dispose();});
             $scope.$apply();
 
+            $scope.$watch('groupByField', function(newV, oldV) {self.groupBy(newV);});
+
         });
 
         d3.json("data/world-50m.json", function(error, data) {
@@ -377,6 +390,8 @@
             svgGraph.selectAll('.relation').remove();
             svgGraph.selectAll('.entity').remove();
             svgGraph.selectAll('.label').remove();
+            svgGraph.selectAll('.group').remove();
+            $scope.groupByField = null;
             _cola
                 .nodes([])
                 .links([])
@@ -429,6 +444,12 @@
 
         this.groupBy = function(dimension) {
             svgGraph.selectAll('.group').remove();
+            if (!dimension) {
+                _cola
+                    .groups([])
+                    .start(30, 30, 30);
+                return;
+            }
 
             var values = {};
             _cola.nodes().forEach(function(obj, i) {
