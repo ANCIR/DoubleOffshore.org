@@ -1,6 +1,5 @@
 ---
 layout: page
-title: Explore
 permalink: /explore/
 ---
 <div ng-controller="NetworkController as network" class="container-fluid">
@@ -49,7 +48,7 @@ permalink: /explore/
 <script type="text/javascript" src="{{ "/assets/js/topojson/topojson.js" | prepend: site.baseurl }}"></script>
 <script type="text/javascript" src="{{ "/assets/js/webcola/cola.v3.min.js" | prepend: site.baseurl }}"></script>
 <script type="text/javascript" src="{{ "/assets/js/crossfilter/crossfilter.min.js" | prepend: site.baseurl }}"></script>
-<script type="text/javascript" src="{{ "/assets/js/app.js" | prepend: site.baseurl }}"></script>
+<script type="text/javascript" src="{{ "/assets/js/app-network.js" | prepend: site.baseurl }}"></script>
 
 <link rel="stylesheet" href="{{ "/assets/css/angular-multi-select/angular-multi-select.css" | prepend: site.baseurl }}" />
 <style>
