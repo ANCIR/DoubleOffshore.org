@@ -30,18 +30,11 @@
     app.controller("SankeyController", ['$scope', function($scope) {
 
         this.entities = [];
-        this.relations = [];
         var self = this;
         // DATA to be filtered
         this.rigs = crossfilter();
-        this.companies = crossfilter();
-        this.flags = crossfilter();
-        this.locations = crossfilter();
         // DIMENSIONS
         this.rigsByLocation = this.rigs.dimension(function(d) {return d.raw_country;});
-        this.companiesByName = this.companies.dimension(function(d) {return d.name;});
-        this.flagsByName = this.companies.dimension(function(d) {return d.name;});
-        this.locationsByName = this.companies.dimension(function(d) {return d.name;});
         // ACTIVE ENTITIES
         $scope.activeCompanies = [];
         $scope.activeFlags = [];
@@ -78,8 +71,6 @@
                     company = uniqueCompanies[obj.name];
                 // add the related company directly to the rig entity
                 obj.rig[obj.type] = company;
-                var relation = new Relation(company, obj.rig, obj.type);
-                self.relations.push(relation);
             };
 
             for (var i = 0; i < data.length; i++) {
@@ -104,42 +95,89 @@
                     var flag;
                     if (!uniqueFlags[entDat.flag]) {
                         flag = new Entity(entDat.flag, "flag");
-                        flag.rigs = [];
                         uniqueFlags[entDat.flag] = flag;
                         self.entities.push(flag);
                     }
                     else
                         flag = uniqueFlags[entDat.flag];
-                    flag.rigs.push(rig);
+                    rig.flag = flag;
                 }
                 // add the location
                 if (entDat.country) {
                     var location;
                     if (!uniqueLocations[entDat.country]) {
-                        location = new Entity(entDat.flag, "location");
-                        location.rigs = [];
+                        location = new Entity(entDat.country, "location");
                         uniqueLocations[entDat.country] = location;
                         self.entities.push(location);
                     }
                     else
                         location = uniqueLocations[entDat.country];
-                    location.rigs.push(rig);
+                    rig.location = location;
                 }
             }
 
             self.rigs.add(self.entities.filter(function(o) {return o.type === "rig";}));
-            self.companies.add(self.entities.filter(function(o) {return o.type === "company";}));
-            self.flags.add(self.entities.filter(function(o) {return o.type === "flag";}));
-            self.locations.add(self.entities.filter(function(o) {return o.type === "location";}));
+
+            self.selectAllActiveEntities();
 
         });
 
         this.selectAllActiveEntities = function(country) {
             if (country === undefined) {
-                country = window.location.hash ? 'Nigeria' : window.location.hash;
+                country = window.location.hash ? window.location.hash : 'Nigeria';
             }
 
+            this.rigsByLocation.filterAll();
+            var rigs = this.rigsByLocation.filterExact(country).top(Infinity);
+            var relations = [];
+            var entities = [];
+            var flags = {};
+            var companies = {};
+
+            var entityAttrs = [
+                ['flag', 'is flag of', true, flags],
+                ['owner', 'is owned by', false, companies],
+                ['manager', 'is managed by', false, companies],
+                ['operator', 'is operated by', false, companies],
+            ];
+
+            function addEntityAndRelation(arr) {
+                var attrName = arr[0];
+                var relationType = arr[1];
+                var relationDir = arr[2];
+                var added = arr[3];
+                var ent = this[attrName];
+                if (!ent)
+                    return;
+                if (!added[ent]) {
+                    // add to active entities
+                    added[ent.name] = ent;
+                    entities.push(ent);
+                }
+                var relation;
+                if (relationDir)
+                    relation = new Relation(ent, this, relationType);
+                else
+                    relation = new Relation(this, ent, relationType);
+                relations.push(relation);
+            }
+
+            rigs.forEach(function(obj) {
+                entities.push(obj);
+                entityAttrs.forEach(addEntityAndRelation, obj);
+            });
+
+            $scope.activeRigs = rigs;
+            $scope.activeLocations = [rigs[0].location];
+            $scope.activeFlags = Object.keys(flags).map(function(k) {return flags[k];});
+            $scope.activeCompanies = Object.keys(companies).map(function(k) {return companies[k];});
             $scope.$apply();
+
+            return {
+                'entities': entities,
+                'relations': relations
+            };
+
         };
 
     }]);
