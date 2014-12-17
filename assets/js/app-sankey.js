@@ -32,9 +32,21 @@
         this.entities = [];
         this.relations = [];
         var self = this;
-        // DATA to be filtered/grouped
+        // DATA to be filtered
         this.rigs = crossfilter();
         this.companies = crossfilter();
+        this.flags = crossfilter();
+        this.locations = crossfilter();
+        // DIMENSIONS
+        this.rigsByLocation = this.rigs.dimension(function(d) {return d.raw_country;});
+        this.companiesByName = this.companies.dimension(function(d) {return d.name;});
+        this.flagsByName = this.companies.dimension(function(d) {return d.name;});
+        this.locationsByName = this.companies.dimension(function(d) {return d.name;});
+        // ACTIVE ENTITIES
+        $scope.activeCompanies = [];
+        $scope.activeFlags = [];
+        $scope.activeLocations = [];
+        $scope.activeRigs = [];
 
         /* Load data */
 
@@ -42,6 +54,8 @@
 
             self.data = data;
             var uniqueCompanies = {};
+            var uniqueFlags = {};
+            var uniqueLocations = {};
 
             var clean = function(data) {
                 for (var key in data)
@@ -85,13 +99,48 @@
                     {name: entDat.manager, type: "manager", rig: rig}
                 ];
                 companies.forEach(processCompanies);
+                // add the flag
+                if (entDat.flag) {
+                    var flag;
+                    if (!uniqueFlags[entDat.flag]) {
+                        flag = new Entity(entDat.flag, "flag");
+                        flag.rigs = [];
+                        uniqueFlags[entDat.flag] = flag;
+                        self.entities.push(flag);
+                    }
+                    else
+                        flag = uniqueFlags[entDat.flag];
+                    flag.rigs.push(rig);
+                }
+                // add the location
+                if (entDat.country) {
+                    var location;
+                    if (!uniqueLocations[entDat.country]) {
+                        location = new Entity(entDat.flag, "location");
+                        location.rigs = [];
+                        uniqueLocations[entDat.country] = location;
+                        self.entities.push(location);
+                    }
+                    else
+                        location = uniqueLocations[entDat.country];
+                    location.rigs.push(rig);
+                }
             }
 
-            self.rigs.add(self.entities.filter(function(obj) {return obj.type === "rig";}));
-            self.companies.add(self.entities.filter(function(obj) {return obj.type === "company";}));
-            $scope.$apply();
+            self.rigs.add(self.entities.filter(function(o) {return o.type === "rig";}));
+            self.companies.add(self.entities.filter(function(o) {return o.type === "company";}));
+            self.flags.add(self.entities.filter(function(o) {return o.type === "flag";}));
+            self.locations.add(self.entities.filter(function(o) {return o.type === "location";}));
 
         });
+
+        this.selectAllActiveEntities = function(country) {
+            if (country === undefined) {
+                country = window.location.hash ? 'Nigeria' : window.location.hash;
+            }
+
+            $scope.$apply();
+        };
 
     }]);
 
