@@ -45,14 +45,15 @@
         /* Set up sankey */
 
         var heightSK = 600;
+        var marginSK = {top: 1, right: 1, bottom: 6, left: 1};
         var svgSK = d3.select("#sankey_container")
             .append("svg")
             .attr("width", "100%")
-            .attr("height", heightSK)
+            .attr("height", heightSK + marginSK.top + marginSK.bottom)
             .append("g")
-            .attr("transform", "translate(0, 0)");
+            .attr("transform", "translate(" + marginSK.left + "," + marginSK.top + ")");
         // don't want to hardcode the width
-        var widthSK = $("#sankey_container > svg").width();
+        var widthSK = $("#sankey_container > svg").width() - marginSK.left - marginSK.right;
         var sankey = d3.sankey()
             .nodeWidth(15)
             .nodePadding(10)
@@ -144,7 +145,7 @@
 
         this.selectAllActiveEntities = function(country) {
             if (country === undefined) {
-                country = window.location.hash ? window.location.hash : 'Nigeria';
+                country = window.location.hash ? window.location.hash.substring(1) : 'Nigeria';
             }
 
             this.rigsByLocation.filterAll();
