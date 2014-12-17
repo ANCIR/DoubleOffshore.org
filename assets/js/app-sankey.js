@@ -45,7 +45,7 @@
         /* Set up sankey */
 
         var heightSK = 600;
-        var marginSK = {top: 1, right: 1, bottom: 6, left: 1};
+        var marginSK = {top: 6, right: 1, bottom: 6, left: 1};
         var svgSK = d3.select("#sankey_container")
             .append("svg")
             .attr("width", "100%")
@@ -202,10 +202,36 @@
         };
 
         this.updateSankey = function(entities, relations) {
+            /*
+            Add dud flag and company relations for rigs that
+            don't have those. This is get flag, rig and company
+            entities aligned.
+            */
+            entities = entities.slice(0);
+            relations = relations.slice(0);
+            $scope.activeRigs.forEach(function(obj) {
+                var dudEntity;
+                if (!obj.flag) {
+                    dudEntity = new Entity("", "dud");
+                    entities.push(dudEntity);
+                    relations.push(new Relation(dudEntity, obj, "dud"));
+                }
+                if (!obj.owner && !obj.manager && !obj.operator) {
+                    dudEntity = new Entity("", "dud");
+                    entities.push(dudEntity);
+                    relations.push(new Relation(obj, dudEntity));
+                }
+            });
+
             sankey
                 .nodes(entities)
                 .links(relations)
                 .layout(32);
+
+            // remove duds after doing layout
+            function isNotDud(obj) {return obj.type !== "dud";}
+            entities = entities.filter(isNotDud);
+            relations = relations.filter(isNotDud);
 
             svgSK.selectAll("*").remove();
 
