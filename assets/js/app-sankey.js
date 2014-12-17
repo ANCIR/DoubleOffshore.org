@@ -9,6 +9,7 @@
         this.source = source;
         this.target = target;
         this.type = type;
+        this.value = 1.0;
     };
 
     var Entity = function(name, type) {
@@ -40,6 +41,24 @@
         $scope.activeFlags = [];
         $scope.activeLocations = [];
         $scope.activeRigs = [];
+
+        /* Set up sankey */
+
+        var heightSK = 600;
+        var svgSK = d3.select("#sankey_container")
+            .append("svg")
+            .attr("width", "100%")
+            .attr("height", heightSK)
+            .append("g")
+            .attr("transform", "translate(0, 0)");
+        // don't want to hardcode the width
+        var widthSK = $("#sankey_container > svg").width();
+        var sankey = d3.sankey()
+            .nodeWidth(15)
+            .nodePadding(10)
+            .size([widthSK, heightSK]);
+        var pathGeneratorSK = sankey.link();
+        var colorSK = d3.scale.category20();
 
         /* Load data */
 
@@ -118,7 +137,8 @@
 
             self.rigs.add(self.entities.filter(function(o) {return o.type === "rig";}));
 
-            self.selectAllActiveEntities();
+            data = self.selectAllActiveEntities();
+            self.updateSankey(data.entities, data.relations);
 
         });
 
@@ -177,6 +197,69 @@
                 'entities': entities,
                 'relations': relations
             };
+
+        };
+
+        this.updateSankey = function(entities, relations) {
+            sankey
+                .nodes(entities)
+                .links(relations)
+                .layout(32);
+
+            svgSK.selectAll("*").remove();
+
+            var relation = svgSK.append("g")
+                .attr("class", "relations")
+                .selectAll(".relation")
+                .data(relations)
+                .enter()
+                .append("path")
+                .attr("class", "relation")
+                .attr("d", pathGeneratorSK)
+                .style("stroke-width", function(d) {return Math.max(1, d.dy);})
+                .sort(function(a, b) {return b.dy - a.dy;});
+
+            relation.append("title")
+                .text(function(d) {return d.source.name + " → " + d.target.name;});
+
+            var entity = svgSK.append("g")
+                .attr("class", "entities")
+                .selectAll(".entity")
+                .data(entities)
+                .enter()
+                .append("g")
+                .attr("class", "entity")
+                .attr("transform", function(d) {return "translate(" + d.x + "," + d.y + ")";})
+                .call(d3.behavior.drag()
+                    .origin(function(d) {return d;})
+                    .on("dragstart", function() {this.parentNode.appendChild(this);})
+                    .on("drag", dragmove));
+
+            entity.append("rect")
+                .attr("height", function(d) {return d.dy;})
+                .attr("width", sankey.nodeWidth())
+                .style("fill", function(d) {return d.color = colorSK(d.name.replace(/ .*/, ""));})
+                .style("stroke", function(d) {return d3.rgb(d.color).darker(2);})
+                .append("title")
+                .text(function(d) {return d.name;});
+
+            entity.append("text")
+                .attr("x", -6)
+                .attr("y", function(d) {return d.dy / 2;})
+                .attr("dy", ".35em")
+                .attr("text-anchor", "end")
+                .attr("transform", null)
+                .text(function(d) {return d.name;})
+                .filter(function(d) {return d.x < widthSK / 2;})
+                .attr("x", 6 + sankey.nodeWidth())
+                .attr("text-anchor", "start");
+
+            function dragmove(d) {
+                d3.select(this)
+                    .attr("transform", "translate(" + d.x + "," + (d.y = Math.max(0, Math.min(heightSK - d.dy, d3.event.y))) + ")");
+                sankey.relayout();
+                relation.attr("d", pathGeneratorSK);
+            }
 
         };
 
