@@ -94,7 +94,7 @@
             .enter()
             .append("image")
             .attr("class", "marker1")
-            .attr("xlink:href","img/map_marker.svg")
+            .attr("xlink:href", SITE_CONFIG.baseurl + "/assets/img/map_marker.svg")
             .attr("width", 12)
             .attr("height", 12)
             .attr("x", function (d) {return d.x1 - 6;})
@@ -104,7 +104,7 @@
             .enter()
             .append("image")
             .attr("class", "marker2")
-            .attr("xlink:href","img/map_marker.svg")
+            .attr("xlink:href", SITE_CONFIG.baseurl + "/assets/img/map_marker.svg")
             .attr("width", 12)
             .attr("height", 12)
             .attr("x", function (d) {return d.x2 - 6;})
@@ -217,7 +217,7 @@
 
         /* Load data */
 
-        d3.json("data/rigs.json", function(error, data) {
+        d3.json(SITE_CONFIG.baseurl + "/data/rigs.json", function(error, data) {
 
             self.data = data;
             var uniqueCompanies = {};
@@ -288,7 +288,7 @@
 
         });
 
-        d3.json("data/world-50m.json", function(error, data) {
+        d3.json(SITE_CONFIG.baseurl + "/data/world-50m.json", function(error, data) {
             var path = d3.geo.path()
                 .projection(projection);
 
@@ -304,7 +304,7 @@
                 .attr("d", path);
         });
 
-        d3.json("data/country_centroids.json", function(error, data){
+        d3.json(SITE_CONFIG.baseurl + "/data/country_centroids.json", function(error, data){
             // swap coordinates around to be [longitude, latitude]
             for (var loc in data) {
                 var coords = data[loc];
