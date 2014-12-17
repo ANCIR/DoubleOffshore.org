@@ -169,7 +169,7 @@
                 var ent = this[attrName];
                 if (!ent)
                     return;
-                if (!added[ent]) {
+                if (!added[ent.name]) {
                     // add to active entities
                     added[ent.name] = ent;
                     entities.push(ent);
