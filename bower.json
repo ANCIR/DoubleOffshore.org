@@ -38,7 +38,10 @@
     "sources": {
       "angular": "bower_components/angular/angular.min.js",
       "jquery": "bower_components/jquery/dist/jquery.min.js",
-      "bootstrap": "bower_components/bootstrap/dist/css/bootstrap.min.css",
+      "bootstrap": [
+        "bower_components/bootstrap/dist/css/bootstrap.min.css",
+        "bower_components/bootstrap/dist/js/bootstrap.min.js"
+      ],
       "webcola": "bower_components/webcola/WebCola/cola.v3.min.js",
       "d3": "bower_components/d3/d3.min.js",
       "d3-geo-projection": "bower_components/d3-geo-projection/index.js",

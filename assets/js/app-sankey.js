@@ -5,6 +5,11 @@
             $interpolateProvider.startSymbol('{[').endSymbol(']}');
         });
 
+    function slugify(s) {
+        // good enough for our small dataset
+        return s.replace(/[^A-Za-z0-9-]+/g, '-');
+    }
+
     var Relation = function(source, target, type) {
         this.source = source;
         this.target = target;
@@ -15,6 +20,7 @@
     var Entity = function(name, type) {
         this.name = name;
         this.type = type;
+        this.slug = slugify(name);
 
         this.getLabel = function() {
             return this.name;
@@ -46,14 +52,14 @@
 
         var heightSK = 900;
         var marginSK = {top: 6, right: 1, bottom: 6, left: 1};
-        var svgSK = d3.select("#sankey_container")
+        var svgSK = d3.select("#sankey-container")
             .append("svg")
             .attr("width", "100%")
             .attr("height", heightSK + marginSK.top + marginSK.bottom)
             .append("g")
             .attr("transform", "translate(" + marginSK.left + "," + marginSK.top + ")");
         // don't want to hardcode the width
-        var widthSK = $("#sankey_container > svg").width() - marginSK.left - marginSK.right;
+        var widthSK = $("#sankey-container > svg").width() - marginSK.left - marginSK.right;
         var sankey = d3.sankey()
             .nodeWidth(15)
             .nodePadding(10)

@@ -10,30 +10,53 @@ layout: default
 <div ng-controller="SankeyController as sankey">
 
   <!-- Explore tool -->
-  <div id="sankey_container" ng-show="activeRigs.length"></div>
+  <div id="sankey-container" ng-show="activeRigs.length"></div>
 
   <!-- Info paragraphs -->
-  <div id="info_container">
+  <div id="info-container">
 
     <!-- Current country -->
-    <div ng-show="activeLocation" id="info-{[activeLocation.type]}-{[activeLocation.name]}" class="">
-      <a href="#info-{[activeLocation.type]}-{[activeLocation.name]}" class="site-title">{[activeLocation.name]} <i class="fa fa-link"></i></a>
-      <p>{[activeLocation.blurb]}</p>
+    <div ng-show="activeLocation" class="panel-group" id="info-current-country">
+      <h3>Current country</h3>
+      <div class="panel panel-default">
+        <div class="panel-heading ">
+          <h4 class="panel-title"><a href="#info-{[activeLocation.type]}-{[activeLocation.slug]}" data-toggle="collapse" data-parent="#info-current-country">{[activeLocation.name]} <i class="fa fa-link"></i></a></h4>
+        </div>
+        <div id="info-{[activeLocation.type]}-{[activeLocation.slug]}" class="collapse in">
+          <div class="panel-body">
+            <p>{[activeLocation.blurb]}</p>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- Flag countries -->
-    <div ng-show="activeFlags.length" class="">
-      <div ng-repeat="flag in activeFlags" id="info-{[flag.type]}-{[flag.name]}">
-        <a href="#info-{[flag.type]}-{[flag.name]}" class="site-title">{[flag.name]} <i class="fa fa-link"></i></a>
-        <p>{[flag.blurb]}</p>
+    <div ng-show="activeFlags.length" class="panel-group" id="info-flags">
+      <h3>Flags</h3>
+      <div ng-repeat="flag in activeFlags | orderBy: 'name'" class="panel panel-default">
+        <div class="panel-heading">
+          <h4 class="panel-title"><a href="#info-{[flag.type]}-{[flag.slug]}" data-toggle="collapse" data-parent="#info-flags" class="collapsed">{[flag.name]} <i class="fa fa-link"></i></a></h4>
+        </div>
+        <div id="info-{[flag.type]}-{[flag.slug]}" class="collapse">
+          <div class="panel-body">
+            <p>{[flag.blurb]}</p>
+          </div>
+        </div>
       </div>
     </div>
 
     <!-- Companies -->
-    <div ng-show="activeCompanies.length" class="">
-      <div ng-repeat="company in activeCompanies" id="info-{[company.type]}-{[company.name]}">
-        <a href="#info-{[company.type]}-{[company.name]}" class="site-title">{[company.name]} <i class="fa fa-link"></i></a>
-        <p>{[company.blurb]}</p>
+    <div ng-show="activeCompanies.length" class="panel-group" id="info-companies">
+      <h3>Companies</h3>
+      <div ng-repeat="company in activeCompanies  | orderBy: 'name'" class="panel panel-default">
+        <div class="panel-heading">
+          <h4 class="panel-title"><a href="#info-{[company.type]}-{[company.slug]}" data-toggle="collapse" data-parent="#info-companies" class="collapsed">{[company.name]} <i class="fa fa-link"></i></a></h4>
+        </div>
+        <div id="info-{[company.type]}-{[company.slug]}" class="collapse">
+          <div class="panel-body">
+            <p>{[company.blurb]}</p>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -41,6 +64,7 @@ layout: default
 </div>
 
 <script type="text/javascript" src="{{ "/assets/3rdparty/jquery/js/jquery.min.js" | prepend: site.baseurl }}"></script>
+<script type="text/javascript" src="{{ "/assets/3rdparty/bootstrap/js/bootstrap.min.js" | prepend: site.baseurl }}"></script>
 <script type="text/javascript" src="{{ "/assets/3rdparty/angular/js/angular.min.js" | prepend: site.baseurl }}"></script>
 <script type="text/javascript" src="{{ "/assets/3rdparty/d3/js/d3.min.js" | prepend: site.baseurl }}"></script>
 <script type="text/javascript" src="{{ "/assets/3rdparty/d3-plugins/js/sankey.js" | prepend: site.baseurl }}"></script>
@@ -51,17 +75,9 @@ layout: default
 
 /* General */
 
-#info_container .site-title {
-  float: none;
-}
-
-.fa-link {
-  font-size: 20px;
-}
-
 /* Sankey diagram */
 
-#sankey_container {
+#sankey-container {
   padding: 20px 0;
 }
 
