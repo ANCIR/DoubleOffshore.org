@@ -39,7 +39,7 @@
         // ACTIVE ENTITIES
         $scope.activeCompanies = [];
         $scope.activeFlags = [];
-        $scope.activeLocations = [];
+        $scope.activeLocation = null;
         $scope.activeRigs = [];
 
         /* Set up sankey */
@@ -144,8 +144,27 @@
         });
 
         this.selectAllActiveEntities = function(country) {
+            function getQueryParams() {
+                if (!window.location.search)
+                    return {};
+                qs = window.location.search
+                    .slice(1)
+                    .split('&');
+                var params = {};
+                qs.forEach(function(s) {
+                    var keyVal = s.split('=', 2)
+                        .map(decodeURIComponent);
+                    if (keyVal.length == 2)
+                        params[keyVal[0]] = keyVal[1];
+                    else if (keyVal.length == 1)
+                        params[keyVal[0]] = true;
+                });
+                return params;
+            }
+
             if (country === undefined) {
-                country = window.location.hash ? window.location.hash.substring(1) : 'Nigeria';
+                var params = getQueryParams();
+                country = params['country'] ? params['country'] : 'Nigeria';
             }
 
             this.rigsByLocation.filterAll();
@@ -189,7 +208,7 @@
             });
 
             $scope.activeRigs = rigs;
-            $scope.activeLocations = [rigs[0].location];
+            $scope.activeLocation = rigs.length > 0 ? rigs[0].location : null;
             $scope.activeFlags = Object.keys(flags).map(function(k) {return flags[k];});
             $scope.activeCompanies = Object.keys(companies).map(function(k) {return companies[k];});
             $scope.$apply();

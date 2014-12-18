@@ -3,24 +3,67 @@ layout: default
 ---
 
 <!-- Intro -->
-<div class="intro">
+<div>
   Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas tincidunt lacus a est accumsan, et pretium odio facilisis. Nullam tempor mi vel tortor pulvinar molestie. Ut non ex non odio volutpat laoreet. Integer in elementum lorem. Cras hendrerit nec lectus et tincidunt. Nam laoreet tempor risus, vehicula hendrerit nisi tristique auctor. Nunc fringilla est leo, efficitur facilisis orci tristique in. Vestibulum ut vehicula urna, et rhoncus arcu. Quisque tempus odio porttitor, iaculis purus non, volutpat dolor. Curabitur convallis sem id purus interdum blandit. Maecenas posuere turpis malesuada tempor efficitur. Nullam mattis turpis lacus, in ultrices lectus fermentum sollicitudin. Vestibulum congue semper imperdiet. Sed elementum odio a tortor gravida maximus.
 </div>
+
 <div ng-controller="SankeyController as sankey">
+
   <!-- Explore tool -->
-  <div id="sankey_container"></div>
+  <div id="sankey_container" ng-show="activeRigs.length"></div>
+
   <!-- Info paragraphs -->
-  <div id="info_container"></div>
+  <div id="info_container">
+
+    <!-- Current country -->
+    <div ng-show="activeLocation" id="info-{[activeLocation.type]}-{[activeLocation.name]}" class="">
+      <a href="#info-{[activeLocation.type]}-{[activeLocation.name]}" class="site-title">{[activeLocation.name]} <i class="fa fa-link"></i></a>
+      <p>{[activeLocation.blurb]}</p>
+    </div>
+
+    <!-- Flag countries -->
+    <div ng-show="activeFlags.length" class="">
+      <div ng-repeat="flag in activeFlags" id="info-{[flag.type]}-{[flag.name]}">
+        <a href="#info-{[flag.type]}-{[flag.name]}" class="site-title">{[flag.name]} <i class="fa fa-link"></i></a>
+        <p>{[flag.blurb]}</p>
+      </div>
+    </div>
+
+    <!-- Companies -->
+    <div ng-show="activeCompanies.length" class="">
+      <div ng-repeat="company in activeCompanies" id="info-{[company.type]}-{[company.name]}">
+        <a href="#info-{[company.type]}-{[company.name]}" class="site-title">{[company.name]} <i class="fa fa-link"></i></a>
+        <p>{[company.blurb]}</p>
+      </div>
+    </div>
+
+  </div>
 </div>
 
-<script type="text/javascript" src="{{ "/assets/js/jquery/jquery.min.js" | prepend: site.baseurl }}"></script>
-<script type="text/javascript" src="{{ "/assets/js/angular/angular.min.js" | prepend: site.baseurl }}"></script>
-<script type="text/javascript" src="{{ "/assets/js/d3/d3.min.js" | prepend: site.baseurl }}"></script>
-<script type="text/javascript" src="{{ "/assets/js/d3-plugins/sankey.js" | prepend: site.baseurl }}"></script>
-<script type="text/javascript" src="{{ "/assets/js/crossfilter/crossfilter.min.js" | prepend: site.baseurl }}"></script>
+<script type="text/javascript" src="{{ "/assets/3rdparty/jquery/js/jquery.min.js" | prepend: site.baseurl }}"></script>
+<script type="text/javascript" src="{{ "/assets/3rdparty/angular/js/angular.min.js" | prepend: site.baseurl }}"></script>
+<script type="text/javascript" src="{{ "/assets/3rdparty/d3/js/d3.min.js" | prepend: site.baseurl }}"></script>
+<script type="text/javascript" src="{{ "/assets/3rdparty/d3-plugins/js/sankey.js" | prepend: site.baseurl }}"></script>
+<script type="text/javascript" src="{{ "/assets/3rdparty/crossfilter/js/crossfilter.min.js" | prepend: site.baseurl }}"></script>
 <script type="text/javascript" src="{{ "/assets/js/app-sankey.js" | prepend: site.baseurl }}"></script>
 
 <style>
+
+/* General */
+
+#info_container .site-title {
+  float: none;
+}
+
+.fa-link {
+  font-size: 20px;
+}
+
+/* Sankey diagram */
+
+#sankey_container {
+  padding: 20px 0;
+}
 
 svg {
   font: 10px sans-serif
