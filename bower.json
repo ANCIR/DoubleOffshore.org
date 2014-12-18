@@ -23,12 +23,17 @@
     "d3-geo-projection": "http://d3js.org/d3.geo.projection.v0.min.js",
     "crossfilter": "~1.3.11",
     "angular-multi-select": "~2.0.2",
-    "d3-plugins": "*"
+    "d3-plugins": "*",
+    "fontawesome": "~4.2.0"
   },
   "install": {
     "path": {
-      "css": "assets/css",
-      "js": "assets/js"
+      "css": "assets/3rdparty/{name}/css",
+      "js": "assets/3rdparty/{name}/js",
+      "eot": "assets/3rdparty/{name}/fonts",
+      "otf": "assets/3rdparty/{name}/fonts",
+      "ttf": "assets/3rdparty/{name}/fonts",
+      "woff": "assets/3rdparty/{name}/fonts"
     },
     "sources": {
       "angular": "bower_components/angular/angular.min.js",
@@ -43,7 +48,11 @@
         "bower_components/angular-multi-select/angular-multi-select.js",
         "bower_components/angular-multi-select/angular-multi-select.css"
       ],
-      "d3-plugins": "bower_components/d3-plugins/sankey/sankey.js"
+      "d3-plugins": "bower_components/d3-plugins/sankey/sankey.js",
+      "fontawesome": [
+        "bower_components/fontawesome/css/font-awesome.min.css",
+        "bower_components/fontawesome/fonts/*.*"
+      ]
     }
   }
 }

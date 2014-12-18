@@ -40,17 +40,17 @@ permalink: /explore/
     </div>
 </div>
 
-<script type="text/javascript" src="{{ "/assets/js/jquery/jquery.min.js" | prepend: site.baseurl }}"></script>
-<script type="text/javascript" src="{{ "/assets/js/angular/angular.min.js" | prepend: site.baseurl }}"></script>
-<script type="text/javascript" src="{{ "/assets/js/angular-multi-select/angular-multi-select.js" | prepend: site.baseurl }}"></script>
-<script type="text/javascript" src="{{ "/assets/js/d3/d3.min.js" | prepend: site.baseurl }}"></script>
-<script type="text/javascript" src="{{ "/assets/js/d3-geo-projection/index.js" | prepend: site.baseurl }}"></script>
-<script type="text/javascript" src="{{ "/assets/js/topojson/topojson.js" | prepend: site.baseurl }}"></script>
-<script type="text/javascript" src="{{ "/assets/js/webcola/cola.v3.min.js" | prepend: site.baseurl }}"></script>
-<script type="text/javascript" src="{{ "/assets/js/crossfilter/crossfilter.min.js" | prepend: site.baseurl }}"></script>
+<script type="text/javascript" src="{{ "/assets/3rdparty/jquery/js/jquery.min.js" | prepend: site.baseurl }}"></script>
+<script type="text/javascript" src="{{ "/assets/3rdparty/angular/js/angular.min.js" | prepend: site.baseurl }}"></script>
+<script type="text/javascript" src="{{ "/assets/3rdparty/angular-multi-select/js/angular-multi-select.js" | prepend: site.baseurl }}"></script>
+<script type="text/javascript" src="{{ "/assets/3rdparty/d3/js/d3.min.js" | prepend: site.baseurl }}"></script>
+<script type="text/javascript" src="{{ "/assets/3rdparty/d3-geo-projection/js/index.js" | prepend: site.baseurl }}"></script>
+<script type="text/javascript" src="{{ "/assets/3rdparty/topojson/js/topojson.js" | prepend: site.baseurl }}"></script>
+<script type="text/javascript" src="{{ "/assets/3rdparty/webcola/js/cola.v3.min.js" | prepend: site.baseurl }}"></script>
+<script type="text/javascript" src="{{ "/assets/3rdparty/crossfilter/js/crossfilter.min.js" | prepend: site.baseurl }}"></script>
 <script type="text/javascript" src="{{ "/assets/js/app-network.js" | prepend: site.baseurl }}"></script>
 
-<link rel="stylesheet" href="{{ "/assets/css/angular-multi-select/angular-multi-select.css" | prepend: site.baseurl }}" />
+<link rel="stylesheet" href="{{ "/assets/3rdparty/angular-multi-select/css/angular-multi-select.css" | prepend: site.baseurl }}" />
 <style>
     .container-fluid {
         padding: 0;
