@@ -44,7 +44,7 @@
 
         /* Set up sankey */
 
-        var heightSK = 600;
+        var heightSK = 900;
         var marginSK = {top: 6, right: 1, bottom: 6, left: 1};
         var svgSK = d3.select("#sankey_container")
             .append("svg")
@@ -204,7 +204,7 @@
         this.updateSankey = function(entities, relations) {
             /*
             Add dud flag and company relations for rigs that
-            don't have those. This is get flag, rig and company
+            don't have those. This is to get flag, rig and company
             entities aligned.
             */
             entities = entities.slice(0);
@@ -241,7 +241,7 @@
                 .data(relations)
                 .enter()
                 .append("path")
-                .attr("class", "relation")
+                .attr("class", function(d) {return "relation " + d.type.replace(/ /g, "");})
                 .attr("d", pathGeneratorSK)
                 .style("stroke-width", function(d) {return Math.max(1, d.dy);})
                 .sort(function(a, b) {return b.dy - a.dy;});
@@ -255,18 +255,14 @@
                 .data(entities)
                 .enter()
                 .append("g")
-                .attr("class", "entity")
-                .attr("transform", function(d) {return "translate(" + d.x + "," + d.y + ")";})
-                .call(d3.behavior.drag()
-                    .origin(function(d) {return d;})
-                    .on("dragstart", function() {this.parentNode.appendChild(this);})
-                    .on("drag", dragmove));
+                .attr("class", function(d) {return "entity " + d.type.replace(/ /g, "");})
+                .attr("transform", function(d) {return "translate(" + d.x + "," + d.y + ")";});
 
             entity.append("rect")
                 .attr("height", function(d) {return d.dy;})
                 .attr("width", sankey.nodeWidth())
-                .style("fill", function(d) {return d.color = colorSK(d.name.replace(/ .*/, ""));})
-                .style("stroke", function(d) {return d3.rgb(d.color).darker(2);})
+                .on("mouseover", mouseover)
+                .on("mouseout", mouseout)
                 .append("title")
                 .text(function(d) {return d.name;});
 
@@ -281,11 +277,49 @@
                 .attr("x", 6 + sankey.nodeWidth())
                 .attr("text-anchor", "start");
 
-            function dragmove(d) {
-                d3.select(this)
-                    .attr("transform", "translate(" + d.x + "," + (d.y = Math.max(0, Math.min(heightSK - d.dy, d3.event.y))) + ")");
-                sankey.relayout();
-                relation.attr("d", pathGeneratorSK);
+            function setSelected(el, d) {
+                d3.select(el)
+                    .attr("class", "selected relation " + d.type.replace(/ /g, ""));
+            }
+
+            function mouseover(ent) {
+                if (ent.type === "rig") {
+                    relation.each(function(d) {
+                        if (d.source === ent || d.target === ent)
+                            setSelected(this, d);
+                    });
+                }
+                else {
+                    var rigs = {};
+                    if (ent.type === "flag") {
+                        relation.each(function(d) {
+                            if (d.source === ent) {
+                                rigs[d.target.name] = d.target;
+                                setSelected(this, d);
+                            }
+                        });
+                        relation.each(function(d) {
+                            if (rigs[d.source.name]) setSelected(this, d);
+                        });
+                    }
+                    else {
+                        relation.each(function(d) {
+                            if (d.target === ent) {
+                                rigs[d.source.name] = d.source;
+                                setSelected(this, d);
+                            }
+                        });
+                        relation.each(function(d) {
+                            if (rigs[d.target.name]) setSelected(this, d);
+                        });
+                    }
+                }
+            }
+
+            function mouseout(ent) {
+                svgSK
+                    .selectAll('.relation.selected')
+                    .attr("class", function(d) {return "relation " + d.type.replace(/ /g, "");});
             }
 
         };

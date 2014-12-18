@@ -27,9 +27,24 @@ svg {
 }
 
 .entity rect {
-  cursor: move;
+  cursor: pointer;
   fill-opacity: .9;
   shape-rendering: crispEdges;
+}
+
+.entity.rig rect {
+  fill: #53777A;
+  stroke: rgba(40, 58, 59, 1.0);
+}
+
+.entity.company rect {
+  fill: #C02942;
+  stroke: rgba(94, 20, 32, 1.0);
+}
+
+.entity.flag rect {
+  fill: #ECD078;
+  stroke: rgba(115, 101, 58, 1.0);
 }
 
 .entity text {
@@ -43,9 +58,8 @@ svg {
   stroke-opacity: .2;
 }
 
-.relation:hover {
-  stroke-opacity: .5;
+.selected {
+  stroke-opacity: .6;
 }
-
 
 </style>
