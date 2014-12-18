@@ -21,6 +21,7 @@
         this.name = name;
         this.type = type;
         this.slug = slugify(name);
+        this.infoID = "info-" + this.type + "-" + this.slug;
 
         this.getLabel = function() {
             return this.name;
@@ -47,6 +48,13 @@
         $scope.activeFlags = [];
         $scope.activeLocation = null;
         $scope.activeRigs = [];
+
+        function goTo(hash) {
+            window.location.hash = undefined;
+            window.location.hash = hash;
+            $($(hash + " a[data-toggle='collapse']")
+                .data("target")).collapse({show: true});
+        }
 
         /* Set up sankey */
 
@@ -76,13 +84,13 @@
             var uniqueFlags = {};
             var uniqueLocations = {};
 
-            var clean = function(data) {
+            function clean(data) {
                 for (var key in data)
                     if (data[key] && typeof data[key] === "string")
                         data[key] = data[key].trim();
-            };
+            }
 
-            var processCompanies = function(obj) {
+            function processCompanies(obj) {
                 if (!obj.name)
                     return;
                 var company;
@@ -97,7 +105,7 @@
                     company = uniqueCompanies[obj.name];
                 // add the related company directly to the rig entity
                 obj.rig[obj.type] = company;
-            };
+            }
 
             for (var i = 0; i < data.length; i++) {
                 var entDat = data[i];
@@ -219,6 +227,8 @@
             $scope.activeCompanies = Object.keys(companies).map(function(k) {return companies[k];});
             $scope.$apply();
 
+            goTo(window.location.hash);
+
             return {
                 'entities': entities,
                 'relations': relations
@@ -290,6 +300,9 @@
                 .on("mouseout", mouseout)
                 .append("title")
                 .text(function(d) {return d.name;});
+
+            entity.selectAll('.flag > rect, .company > rect')
+                .on("click", function(d) {goTo("#" + d.infoID);});
 
             entity.append("text")
                 .attr("x", -6)
