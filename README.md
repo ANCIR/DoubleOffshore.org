@@ -1,4 +1,3 @@
 # TODO
 
-* make blurb show up in tooltip on hover
-* include FSI
+* permalinks to country/company info

@@ -13,54 +13,8 @@ layout: default
   <div id="sankey-container" ng-show="activeRigs.length"></div>
 
   <!-- Info paragraphs -->
-  <div id="info-container">
+  <div id="info-container"></div>
 
-    <!-- Current country -->
-    <div ng-show="activeLocation" class="panel-group" id="info-current-country">
-      <h3>Current country</h3>
-      <div id="{[activeLocation.infoID]}" class="panel panel-default">
-        <div class="panel-heading ">
-          <h4 class="panel-title"><a href="#{[activeLocation.infoID]}" data-toggle="collapse" data-target="#{[activeLocation.infoID]} > .collapse">{[activeLocation.name]} <i class="fa fa-link"></i></a></h4>
-        </div>
-        <div class="collapse in">
-          <div class="panel-body">
-            <p>{[activeLocation.blurb]}</p>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Flag countries -->
-    <div ng-show="activeFlags.length" class="panel-group" id="info-flags">
-      <h3>Flags</h3>
-      <div ng-repeat="flag in activeFlags | orderBy: 'name'" id="{[flag.infoID]}" class="panel panel-default">
-        <div class="panel-heading">
-          <h4 class="panel-title"><a href="#{[flag.infoID]}" data-toggle="collapse" data-target="#{[flag.infoID]} > .collapse" class="collapsed">{[flag.name]} <i class="fa fa-link"></i></a></h4>
-        </div>
-        <div class="collapse">
-          <div class="panel-body">
-            <p>{[flag.blurb]}</p>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Companies -->
-    <div ng-show="activeCompanies.length" class="panel-group" id="info-companies">
-      <h3>Companies</h3>
-      <div ng-repeat="company in activeCompanies  | orderBy: 'name'" id="{[company.infoID]}" class="panel panel-default">
-        <div class="panel-heading">
-          <h4 class="panel-title"><a href="#{[company.infoID]}" data-toggle="collapse" data-target="#{[company.infoID]} > .collapse" class="collapsed">{[company.name]} <i class="fa fa-link"></i></a></h4>
-        </div>
-        <div class="collapse">
-          <div class="panel-body">
-            <p>{[company.blurb]}</p>
-          </div>
-        </div>
-      </div>
-    </div>
-
-  </div>
 </div>
 
 <script type="text/javascript" src="{{ "/assets/3rdparty/jquery/js/jquery.min.js" | prepend: site.baseurl }}"></script>
@@ -80,6 +34,7 @@ layout: default
   width: 100%;
   height: 100%;
 }
+
 /* Sankey diagram */
 
 #sankey-container {
@@ -122,8 +77,13 @@ svg {
   stroke-opacity: .2;
 }
 
-.selected {
+/* Selected stuff */
+
+.relation.selected {
   stroke-opacity: .6;
+}
+
+.entity.selected text {
 }
 
 </style>

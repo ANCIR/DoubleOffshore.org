@@ -38,6 +38,7 @@
     app.controller("SankeyController", ['$scope', function($scope) {
 
         this.entities = [];
+        this.flag_data = {};
         var self = this;
         // DATA to be filtered
         this.rigs = crossfilter();
@@ -48,13 +49,6 @@
         $scope.activeFlags = [];
         $scope.activeLocation = null;
         $scope.activeRigs = [];
-
-        function goTo(hash) {
-            window.location.hash = undefined;
-            window.location.hash = hash;
-            $($(hash + " a[data-toggle='collapse']")
-                .data("target")).collapse({show: true});
-        }
 
         /* Set up sankey */
 
@@ -157,6 +151,12 @@
 
         });
 
+        d3.csv(SITE_CONFIG.baseurl + '/data/countries.csv', function(error, data) {
+            data.forEach(function(row){
+                self.flag_data[row['Flag country']] = row;
+            });
+        });
+
         this.selectAllActiveEntities = function(country) {
             function getQueryParams() {
                 if (!window.location.search)
@@ -226,8 +226,6 @@
             $scope.activeFlags = Object.keys(flags).map(function(k) {return flags[k];});
             $scope.activeCompanies = Object.keys(companies).map(function(k) {return companies[k];});
             $scope.$apply();
-
-            goTo(window.location.hash);
 
             return {
                 'entities': entities,
@@ -302,7 +300,27 @@
                 .text(function(d) {return d.name;});
 
             entity.selectAll('.flag > rect, .company > rect')
-                .on("click", function(d) {goTo("#" + d.infoID);});
+                .each(function(d) {
+                    $(this).popover({
+                        title: d.name,
+                        content: function() {
+                            var blurb = "";
+                            if (d.type === "flag" && self.flag_data[d.name]) {
+                                var dat = self.flag_data[d.name];
+                                if (dat['FSI']) {
+                                    blurb = "<div><strong>FSI :</strong> " + dat['FSI'] +
+                                        ' (<a target="_blank" href="' + dat['FSI URL'] +
+                                        '">FSI report</a>)' +
+                                        "<br/><strong>FSI rank:</strong> " +
+                                        dat['FSI Rank'] + "</div>";
+                                }
+                            }
+                            return $(blurb).html();
+                        },
+                        html: true,
+                        container: $("body")
+                    });
+                });
 
             entity.append("text")
                 .attr("x", -6)
@@ -321,6 +339,9 @@
             }
 
             function mouseover(ent) {
+                d3.select(this.parentNode)
+                    .attr("class", "selected entity " + ent.type.replace(/ /g, ""));
+
                 if (ent.type === "rig") {
                     relation.each(function(d) {
                         if (d.source === ent || d.target === ent)
@@ -355,6 +376,9 @@
             }
 
             function mouseout(ent) {
+                d3.select(this.parentNode)
+                    .attr("class", "entity " + ent.type.replace(/ /g, ""));
+
                 svgSK
                     .selectAll('.relation.selected')
                     .attr("class", function(d) {return "relation " + d.type.replace(/ /g, "");});
