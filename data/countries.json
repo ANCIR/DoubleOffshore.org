@@ -1,0 +1,65 @@
+[
+  {
+    "Flag country":"Belize",
+    "Blurb":"",
+    "FSI":129.8,
+    "FSI Rank":52,
+    "FSI URL":"http://www.financialsecrecyindex.com/database/Belize.xml"
+  },
+  {
+    "Flag country":"Italy",
+    "Blurb":"",
+    "FSI":118.9,
+    "FSI Rank":54,
+    "FSI URL":"http://www.financialsecrecyindex.com/database/Italy.xml"
+  },
+  {
+    "Flag country":"Liberia",
+    "Blurb":"",
+    "FSI":300.8,
+    "FSI Rank":27,
+    "FSI URL":"http://www.financialsecrecyindex.com/database/Liberia.xml"
+  },
+  {
+    "Flag country":"Marshall Islands",
+    "Blurb":"",
+    "FSI":329.6,
+    "FSI Rank":23,
+    "FSI URL":"http://www.financialsecrecyindex.com/database/MarshallIslands.xml"
+  },
+  {
+    "Flag country":"Nigeria",
+    "Blurb":"",
+    "FSI":null,
+    "FSI Rank":null,
+    "FSI URL":""
+  },
+  {
+    "Flag country":"Panama",
+    "Blurb":"",
+    "FSI":489.6,
+    "FSI Rank":11,
+    "FSI URL":"http://www.financialsecrecyindex.com/database/Panama.xml"
+  },
+  {
+    "Flag country":"Saint Vincent and the Grenadines",
+    "Blurb":"",
+    "FSI":85.1,
+    "FSI Rank":62,
+    "FSI URL":"http://www.financialsecrecyindex.com/database/St%20Vincent%20&%20Grenadines.xml"
+  },
+  {
+    "Flag country":"Vanuatu",
+    "Blurb":"",
+    "FSI":164.9,
+    "FSI Rank":45,
+    "FSI URL":"http://www.financialsecrecyindex.com/database/Vanuatu.xml"
+  },
+  {
+    "Flag country":"Venezuela",
+    "Blurb":"",
+    "FSI":null,
+    "FSI Rank":null,
+    "FSI URL":""
+  }
+]
