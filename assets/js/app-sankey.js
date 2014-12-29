@@ -35,45 +35,23 @@
     };
 
 
-    app.controller("SankeyController", ['$scope', function($scope) {
+    app.factory("entities", ['$location', '$q', function($location, $q) {
 
-        this.entities = [];
-        this.flag_data = {};
-        var self = this;
+        var allEntities = [];
         // DATA to be filtered
-        this.rigs = crossfilter();
+        var rigs = crossfilter();
         // DIMENSIONS
-        this.rigsByLocation = this.rigs.dimension(function(d) {return d.raw_country;});
+        var rigsByLocation = rigs.dimension(function(d) {return d.raw_country;});
         // ACTIVE ENTITIES
-        $scope.activeCompanies = [];
-        $scope.activeFlags = [];
-        $scope.activeLocation = null;
-        $scope.activeRigs = [];
-
-        /* Set up sankey */
-
-        var heightSK = 900;
-        var marginSK = {top: 6, right: 1, bottom: 6, left: 1};
-        var svgSK = d3.select("#sankey-container")
-            .append("svg")
-            .attr("width", "100%")
-            .attr("height", heightSK + marginSK.top + marginSK.bottom)
-            .append("g")
-            .attr("transform", "translate(" + marginSK.left + "," + marginSK.top + ")");
-        // don't want to hardcode the width
-        var widthSK = $("#sankey-container > svg").width() - marginSK.left - marginSK.right;
-        var sankey = d3.sankey()
-            .nodeWidth(15)
-            .nodePadding(10)
-            .size([widthSK, heightSK]);
-        var pathGeneratorSK = sankey.link();
-        var colorSK = d3.scale.category20();
+        var activeLocation = $location.search()['country'];
+        if (activeLocation === undefined)
+            activeLocation = 'Nigeria';
+        var activeNetwork = $q.defer();
 
         /* Load data */
 
         d3.json(SITE_CONFIG.baseurl + "/data/rigs.json", function(error, data) {
 
-            self.data = data;
             var uniqueCompanies = {};
             var uniqueFlags = {};
             var uniqueLocations = {};
@@ -93,7 +71,7 @@
                     company = new Entity(obj.name, "company");
                     company.setSize(50, 50);
                     uniqueCompanies[obj.name] = company;
-                    self.entities.push(company);
+                    allEntities.push(company);
                 }
                 else
                     company = uniqueCompanies[obj.name];
@@ -107,7 +85,7 @@
                 clean(entDat);
                 // add the rig
                 var rig = new Entity(entDat.name, "rig");
-                self.entities.push(rig);
+                allEntities.push(rig);
                 // add all attributes prefixed with 'raw_'
                 for (var key in entDat)
                     rig['raw_' + key] = entDat[key];
@@ -124,7 +102,7 @@
                     if (!uniqueFlags[entDat.flag]) {
                         flag = new Entity(entDat.flag, "flag");
                         uniqueFlags[entDat.flag] = flag;
-                        self.entities.push(flag);
+                        allEntities.push(flag);
                     }
                     else
                         flag = uniqueFlags[entDat.flag];
@@ -136,7 +114,7 @@
                     if (!uniqueLocations[entDat.country]) {
                         location = new Entity(entDat.country, "location");
                         uniqueLocations[entDat.country] = location;
-                        self.entities.push(location);
+                        allEntities.push(location);
                     }
                     else
                         location = uniqueLocations[entDat.country];
@@ -144,45 +122,15 @@
                 }
             }
 
-            self.rigs.add(self.entities.filter(function(o) {return o.type === "rig";}));
-
-            data = self.selectAllActiveEntities();
-            self.updateSankey(data.entities, data.relations);
+            rigs.add(allEntities.filter(function(o) {return o.type === "rig";}));
+            selectActiveEntities(activeLocation);
 
         });
 
-        d3.csv(SITE_CONFIG.baseurl + '/data/countries.csv', function(error, data) {
-            data.forEach(function(row){
-                self.flag_data[row['Flag country']] = row;
-            });
-        });
+        function selectActiveEntities(country) {
 
-        this.selectAllActiveEntities = function(country) {
-            function getQueryParams() {
-                if (!window.location.search)
-                    return {};
-                qs = window.location.search
-                    .slice(1)
-                    .split('&');
-                var params = {};
-                qs.forEach(function(s) {
-                    var keyVal = s.split('=', 2)
-                        .map(decodeURIComponent);
-                    if (keyVal.length == 2)
-                        params[keyVal[0]] = keyVal[1];
-                    else if (keyVal.length == 1)
-                        params[keyVal[0]] = true;
-                });
-                return params;
-            }
-
-            if (country === undefined) {
-                var params = getQueryParams();
-                country = params['country'] ? params['country'] : 'Nigeria';
-            }
-
-            this.rigsByLocation.filterAll();
-            var rigs = this.rigsByLocation.filterExact(country).top(Infinity);
+            rigsByLocation.filterAll();
+            var activeRigs = rigsByLocation.filterExact(country).top(Infinity);
             var relations = [];
             var entities = [];
             var flags = {};
@@ -216,25 +164,65 @@
                 relations.push(relation);
             }
 
-            rigs.forEach(function(obj) {
+            activeRigs.forEach(function(obj) {
                 entities.push(obj);
                 entityAttrs.forEach(addEntityAndRelation, obj);
             });
 
-            $scope.activeRigs = rigs;
-            $scope.activeLocation = rigs.length > 0 ? rigs[0].location : null;
-            $scope.activeFlags = Object.keys(flags).map(function(k) {return flags[k];});
-            $scope.activeCompanies = Object.keys(companies).map(function(k) {return companies[k];});
-            $scope.$apply();
-
-            return {
+            activeNetwork.resolve({
+                'rigs': activeRigs,
+                'flags': Object.keys(flags).map(function(k) {return flags[k];}),
+                'companies': Object.keys(companies).map(function(k) {return companies[k];}),
                 'entities': entities,
                 'relations': relations
-            };
+            });
 
+        }
+
+        return {
+            'activeNetwork': activeNetwork.promise,
+            'activeLocation': activeLocation,
         };
 
-        this.updateSankey = function(entities, relations) {
+    }]);
+
+
+    app.controller("SankeyController", ['entities', function($entities) {
+
+        /* Get data */
+
+        var flagData = {};
+
+        d3.csv(SITE_CONFIG.baseurl + '/data/countries.csv', function(error, data) {
+            data.forEach(function(row){
+                flagData[row['Flag country']] = row;
+            });
+        });
+
+        $entities.activeNetwork.then(function(network) {
+            updateSankey(network.entities, network.relations, network.rigs);
+        });
+
+        /* Set up sankey */
+
+        var heightSK = 900;
+        var marginSK = {top: 6, right: 1, bottom: 6, left: 1};
+        var svgSK = d3.select("#sankey-container")
+            .append("svg")
+            .attr("width", "100%")
+            .attr("height", heightSK + marginSK.top + marginSK.bottom)
+            .append("g")
+            .attr("transform", "translate(" + marginSK.left + "," + marginSK.top + ")");
+        // don't want to hardcode the width
+        var widthSK = $("#sankey-container > svg").width() - marginSK.left - marginSK.right;
+        var sankey = d3.sankey()
+            .nodeWidth(15)
+            .nodePadding(10)
+            .size([widthSK, heightSK]);
+        var pathGeneratorSK = sankey.link();
+        var colorSK = d3.scale.category20();
+
+        function updateSankey(entities, relations, rigs) {
             /*
             Add dud flag and company relations for rigs that
             don't have those. This is to get flag, rig and company
@@ -242,7 +230,7 @@
             */
             entities = entities.slice(0);
             relations = relations.slice(0);
-            $scope.activeRigs.forEach(function(obj) {
+            rigs.forEach(function(obj) {
                 var dudEntity;
                 if (!obj.flag) {
                     dudEntity = new Entity("", "dud");
@@ -305,8 +293,8 @@
                         title: d.name,
                         content: function() {
                             var blurb = "";
-                            if (d.type === "flag" && self.flag_data[d.name]) {
-                                var dat = self.flag_data[d.name];
+                            if (d.type === "flag" && flagData[d.name]) {
+                                var dat = flagData[d.name];
                                 if (dat['FSI']) {
                                     blurb = "<div><strong>FSI :</strong> " + dat['FSI'] +
                                         ' (<a target="_blank" href="' + dat['FSI URL'] +
@@ -384,7 +372,14 @@
                     .attr("class", function(d) {return "relation " + d.type.replace(/ /g, "");});
             }
 
-        };
+        }
+
+    }]);
+
+
+    app.controller("MapController", ['$scope', 'entities', function($scope, $entities) {
+
+        $scope.activeLocation = $entities.activeLocation;
 
     }]);
 
