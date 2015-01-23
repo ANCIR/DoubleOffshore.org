@@ -47,19 +47,56 @@
         if (activeLocation === undefined)
             activeLocation = 'Nigeria';
         var activeNetwork = $q.defer();
+        // DATA SOURCES
+        var companyData = $q.defer();
+        var rigData = $q.defer();
 
         /* Load data */
 
-        d3.json(SITE_CONFIG.baseurl + "/data/rigs.json", function(error, data) {
+        d3.csv(SITE_CONFIG.baseurl + '/data/companies.csv', function(error, data) {
+            var dat = {};
+            data.forEach(function(row){dat[row['Company'].trim()] = row;});
+            companyData.resolve(dat);
+        });
 
+        d3.json(SITE_CONFIG.baseurl + "/data/rigs.json", function(error, data) {
+            rigData.resolve(data);
+        });
+
+        /* Process data */
+
+        $q.all([rigData.promise, companyData.promise]).then(function(values) {
+
+            var data = values[0];
+            var extra = values[1];
             var uniqueCompanies = {};
-            var uniqueFlags = {};
+            var uniqueRigFlags = {};
             var uniqueLocations = {};
+            var uniqueCompanyFlags = {};
 
             function clean(data) {
                 for (var key in data)
                     if (data[key] && typeof data[key] === "string")
                         data[key] = data[key].trim();
+            }
+
+            function processCompanyFlag(company) {
+                if (!extra[company.name])
+                    return;
+                var flagName = (extra[company.name]['Based'] ||
+                                extra[company.name]['Ultimate Owner Jurisdiction']);
+                if (!flagName)
+                    return;
+                // add the company flag
+                var flag;
+                if (!uniqueCompanyFlags[flagName]) {
+                    flag = new Entity(flagName, "cflag");
+                    uniqueCompanyFlags[flagName] = flag;
+                    allEntities.push(flag);
+                }
+                else
+                    flag = uniqueCompanyFlags[flagName];
+                company.flag = flag;
             }
 
             function processCompanies(obj) {
@@ -72,6 +109,7 @@
                     company.setSize(50, 50);
                     uniqueCompanies[obj.name] = company;
                     allEntities.push(company);
+                    processCompanyFlag(company);
                 }
                 else
                     company = uniqueCompanies[obj.name];
@@ -99,13 +137,13 @@
                 // add the flag
                 if (entDat.flag) {
                     var flag;
-                    if (!uniqueFlags[entDat.flag]) {
-                        flag = new Entity(entDat.flag, "flag");
-                        uniqueFlags[entDat.flag] = flag;
+                    if (!uniqueRigFlags[entDat.flag]) {
+                        flag = new Entity(entDat.flag, "rflag");
+                        uniqueRigFlags[entDat.flag] = flag;
                         allEntities.push(flag);
                     }
                     else
-                        flag = uniqueFlags[entDat.flag];
+                        flag = uniqueRigFlags[entDat.flag];
                     rig.flag = flag;
                 }
                 // add the location
@@ -133,11 +171,12 @@
             var activeRigs = rigsByLocation.filterExact(country).top(Infinity);
             var relations = [];
             var entities = [];
-            var flags = {};
+            var rflags = {};
+            var cflags = {};
             var companies = {};
 
             var entityAttrs = [
-                ['flag', 'is flag of', true, flags],
+                ['flag', 'is flag of', true, rflags],
                 ['owner', 'is owned by', false, companies],
                 ['manager', 'is managed by', false, companies],
                 ['operator', 'is operated by', false, companies],
@@ -169,9 +208,22 @@
                 entityAttrs.forEach(addEntityAndRelation, obj);
             });
 
+            for (var key in companies) {
+                var company = companies[key];
+                var flag = company.flag;
+                if (!flag)
+                    continue;
+                if (!cflags[flag.name]) {
+                    cflags[flag.name] = company.flag;
+                    entities.push(flag);
+                }
+                relations.push(new Relation(company, flag, "is based in"));
+            }
+
             activeNetwork.resolve({
                 'rigs': activeRigs,
-                'flags': Object.keys(flags).map(function(k) {return flags[k];}),
+                'rflags': Object.keys(rflags).map(function(k) {return rflags[k];}),
+                'cflags': Object.keys(cflags).map(function(k) {return cflags[k];}),
                 'companies': Object.keys(companies).map(function(k) {return companies[k];}),
                 'entities': entities,
                 'relations': relations
@@ -195,12 +247,12 @@
 
         d3.csv(SITE_CONFIG.baseurl + '/data/countries.csv', function(error, data) {
             data.forEach(function(row){
-                flagData[row['Flag country']] = row;
+                flagData[row['Flag country'].trim()] = row;
             });
         });
 
         $entities.activeNetwork.then(function(network) {
-            updateSankey(network.entities, network.relations, network.rigs);
+            updateSankey(network);
         });
 
         /* Set up sankey */
@@ -222,15 +274,15 @@
         var pathGeneratorSK = sankey.link();
         var colorSK = d3.scale.category20();
 
-        function updateSankey(entities, relations, rigs) {
+        function updateSankey(network) {
             /*
-            Add dud flag and company relations for rigs that
-            don't have those. This is to get flag, rig and company
+            Add dud flag and company relations for rigs and companies
+            that don't have those. This is to get flag, rig and company
             entities aligned.
             */
-            entities = entities.slice(0);
-            relations = relations.slice(0);
-            rigs.forEach(function(obj) {
+            var entities = network.entities.slice(0);
+            var relations = network.relations.slice(0);
+            network.rigs.forEach(function(obj) {
                 var dudEntity;
                 if (!obj.flag) {
                     dudEntity = new Entity("", "dud");
@@ -240,8 +292,15 @@
                 if (!obj.owner && !obj.manager && !obj.operator) {
                     dudEntity = new Entity("", "dud");
                     entities.push(dudEntity);
-                    relations.push(new Relation(obj, dudEntity));
+                    relations.push(new Relation(obj, dudEntity, "dud"));
                 }
+            });
+            network.companies.forEach(function(obj) {
+                if (obj.flag)
+                    return;
+                var dudEntity = new Entity("", "dud");
+                entities.push(dudEntity);
+                relations.push(new Relation(obj, dudEntity, "dud"));
             });
 
             sankey
@@ -287,16 +346,16 @@
                 .append("title")
                 .text(function(d) {return d.name;});
 
-            entity.selectAll('.flag > rect, .company > rect')
+            entity.selectAll('.cflag > rect, .rflag > rect')
                 .each(function(d) {
                     $(this).popover({
                         title: d.name,
                         content: function() {
                             var blurb = "";
-                            if (d.type === "flag" && flagData[d.name]) {
+                            if (flagData[d.name]) {
                                 var dat = flagData[d.name];
-                                if (dat['FSI']) {
-                                    blurb = "<div><strong>FSI :</strong> " + dat['FSI'] +
+                                if (dat['FSI Secrecy Score']) {
+                                    blurb = "<div><strong>FSI score:</strong> " + dat['FSI Secrecy Score'] +
                                         ' (<a target="_blank" href="' + dat['FSI URL'] +
                                         '">FSI report</a>)' +
                                         "<br/><strong>FSI rank:</strong> " +
@@ -338,7 +397,7 @@
                 }
                 else {
                     var rigs = {};
-                    if (ent.type === "flag") {
+                    if (ent.type === "rflag") {
                         relation.each(function(d) {
                             if (d.source === ent) {
                                 rigs[d.target.name] = d.target;
