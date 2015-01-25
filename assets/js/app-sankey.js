@@ -389,36 +389,70 @@
                 d3.select(this.parentNode)
                     .attr("class", "selected entity " + ent.type.replace(/ /g, ""));
 
+                var rigs = {};
+                var companies = {};
+
                 if (ent.type === "rig") {
                     relation.each(function(d) {
                         if (d.source === ent || d.target === ent)
                             setSelected(this, d);
+                        else if (d.type === 'is based in' &&
+                                 (d.source === ent.owner ||
+                                  d.source === ent.manager ||
+                                  d.source === ent.operator))
+                            setSelected(this, d);
                     });
                 }
+                else if (ent.type === "company") {
+                    relation.each(function(d) {
+                        if (d.source === ent)
+                            setSelected(this, d);
+                        else if (d.target === ent) {
+                            setSelected(this, d);
+                            rigs[d.source.name] = d.source;
+                        }
+                    });
+                    relation.each(function(d) {
+                        if (d.target.type === 'rig' && rigs[d.target.name])
+                            setSelected(this, d);
+                    });
+                }
+                else if (ent.type === "rflag") {
+                    relation.each(function(d) {
+                        if (d.source === ent) {
+                            rigs[d.target.name] = d.target;
+                            setSelected(this, d);
+                        }
+                    });
+                    relation.each(function(d) {
+                        if (d.source.type === 'rig' && rigs[d.source.name]) {
+                            companies[d.target.name] = d.target;
+                            setSelected(this, d);
+                        }
+                    });
+                    relation.each(function(d) {
+                        if (d.source.type === 'company' && companies[d.source.name])
+                            setSelected(this, d);
+                    });
+                }
+                // ent.type === "cflag"
                 else {
-                    var rigs = {};
-                    if (ent.type === "rflag") {
-                        relation.each(function(d) {
-                            if (d.source === ent) {
-                                rigs[d.target.name] = d.target;
-                                setSelected(this, d);
-                            }
-                        });
-                        relation.each(function(d) {
-                            if (rigs[d.source.name]) setSelected(this, d);
-                        });
-                    }
-                    else {
-                        relation.each(function(d) {
-                            if (d.target === ent) {
-                                rigs[d.source.name] = d.source;
-                                setSelected(this, d);
-                            }
-                        });
-                        relation.each(function(d) {
-                            if (rigs[d.target.name]) setSelected(this, d);
-                        });
-                    }
+                    relation.each(function(d) {
+                        if (d.target === ent) {
+                            companies[d.source.name] = d.source;
+                            setSelected(this, d);
+                        }
+                    });
+                    relation.each(function(d) {
+                        if (d.target.type === 'company' && companies[d.target.name]) {
+                            rigs[d.source.name] = d.source;
+                            setSelected(this, d);
+                        }
+                    });
+                    relation.each(function(d) {
+                        if (d.target.type === "rig" && rigs[d.target.name])
+                            setSelected(this, d);
+                    });
                 }
             }
 
