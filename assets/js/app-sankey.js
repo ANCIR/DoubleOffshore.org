@@ -35,6 +35,18 @@
     };
 
 
+    app.directive("flagPopup", function() {
+        return {
+            restrict: "E",
+            replace: true,
+            templateUrl: SITE_CONFIG.baseurl + "/flag.html",
+            scope: {
+                data: "=data",
+            },
+        };
+    });
+
+
     app.factory("entities", ['$location', '$q', function($location, $q) {
 
         var allEntities = [];
@@ -239,15 +251,15 @@
     }]);
 
 
-    app.controller("SankeyController", ['entities', function($entities) {
+    app.controller("SankeyController", ['entities', '$compile', '$scope', function($entities, $compile, $scope) {
 
         /* Get data */
 
-        var flagData = {};
+        $scope.flagData = {};
 
         d3.csv(SITE_CONFIG.baseurl + '/data/countries.csv', function(error, data) {
             data.forEach(function(row){
-                flagData[row['Flag country'].trim()] = row;
+                $scope.flagData[row['Flag country'].trim()] = row;
             });
         });
 
@@ -351,18 +363,7 @@
                     $(this).popover({
                         title: d.name,
                         content: function() {
-                            var blurb = "";
-                            if (flagData[d.name]) {
-                                var dat = flagData[d.name];
-                                if (dat['FSI Secrecy Score']) {
-                                    blurb = "<div><strong>FSI score:</strong> " + dat['FSI Secrecy Score'] +
-                                        ' (<a target="_blank" href="' + dat['FSI URL'] +
-                                        '">FSI report</a>)' +
-                                        "<br/><strong>FSI rank:</strong> " +
-                                        dat['FSI Rank'] + "</div>";
-                                }
-                            }
-                            return $(blurb).html();
+                            return $compile('<flag-popup data="flagData[\'' + d.name + '\']"></flag-popup>')($scope);
                         },
                         html: true,
                         container: $("body")
