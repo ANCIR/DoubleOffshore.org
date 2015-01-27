@@ -252,6 +252,7 @@
 
         /* Get data */
 
+        $scope.activeLocation = $model.activeLocation;
         $scope.flagData = {};
 
         d3.csv(SITE_CONFIG.baseurl + '/data/countries.csv', function(error, data) {
@@ -487,13 +488,6 @@
             }
 
         }
-
-    }]);
-
-
-    app.controller("MapController", ['$scope', 'model', function($scope, $model) {
-
-        $scope.activeLocation = $model.activeLocation;
 
     }]);
 

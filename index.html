@@ -2,22 +2,62 @@
 layout: default
 ---
 
-<!-- Intro -->
-<div ng-controller="MapController as map">
+<!-- intro -->
+<div ng-controller="SankeyController as sankey">
+  <p>
   This visualization shows the connections between oil rigs in {[activeLocation]} (<strong>middle</strong>), the countries they are registered in (<strong>left</strong>) and the companies that own, operate and manage them (<strong>right</strong>). Click on a country or company for more information about the particular entity.
+  </p>
+
+  <!-- sankey diagram -->
+  <div id="sankey-container"></div>
 </div>
 
-<div ng-controller="SankeyController as sankey">
+<div ng-controller="NetworkController as network" class="container-fluid">
+    <!-- query controls -->
+    <div class="col-md-2">
+        <form ng-submit="network.createViews()" role="form">
+            <span class="text-muted">Select oil rigs by choosing 0 or more filtering criteria and clicking <em>Show rigs</em>.</span>
+            <label>Locations:</label>
+            <div multi-select input-model="locationValues" button-label="name" item-label="name" tick-property="ticked" default-label="any country"></div>
+            <label>Owners:</label>
+            <div multi-select input-model="ownerValues" button-label="name" item-label="name" tick-property="ticked" default-label="anyone"></div>
+            <label>Operators:</label>
+            <div multi-select input-model="operatorValues" button-label="name" item-label="name" tick-property="ticked" default-label="anyone"></div>
+            <label>Managers:</label>
+            <div multi-select input-model="managerValues" button-label="name" item-label="name" tick-property="ticked" default-label="anyone"></div>
+            <label>Flags:</label>
+            <div multi-select input-model="flagValues" button-label="name" item-label="name" tick-property="ticked" default-label="any country"></div>
+            <br/><input type="submit" class="btn btn-primary" value="Show rigs" />
+        </form>
+    </div>
 
-  <!-- Explore tool -->
-  <div id="sankey-container"></div>
+    <!-- network canvas -->
+    <div class="col-md-5">
+        <div id="network-container"></div>
+        <div>
+            <form class="form-inline">
+                <label>Group by </label>
+                <select ng-model="groupByField" ng-options="key for (key, val) in groupByOptions" class="form-control">
+                    <option value="">None</option>
+                </select>
+            </form>
+        </div>
+    </div>
 
+    <!-- map view -->
+    <div class="col-md-5">
+        <div id="map-container"></div>
+    </div>
 </div>
 
 <script type="text/javascript" src="{{ "/assets/3rdparty/jquery/js/jquery.min.js" | prepend: site.baseurl }}"></script>
 <script type="text/javascript" src="{{ "/assets/3rdparty/bootstrap/js/bootstrap.min.js" | prepend: site.baseurl }}"></script>
 <script type="text/javascript" src="{{ "/assets/3rdparty/angular/js/angular.min.js" | prepend: site.baseurl }}"></script>
+<script type="text/javascript" src="{{ "/assets/3rdparty/angular-multi-select/js/angular-multi-select.js" | prepend: site.baseurl }}"></script>
 <script type="text/javascript" src="{{ "/assets/3rdparty/d3/js/d3.min.js" | prepend: site.baseurl }}"></script>
+<script type="text/javascript" src="{{ "/assets/3rdparty/d3-geo-projection/js/index.js" | prepend: site.baseurl }}"></script>
+<script type="text/javascript" src="{{ "/assets/3rdparty/topojson/js/topojson.js" | prepend: site.baseurl }}"></script>
+<script type="text/javascript" src="{{ "/assets/3rdparty/webcola/js/cola.v3.min.js" | prepend: site.baseurl }}"></script>
 <script type="text/javascript" src="{{ "/assets/3rdparty/d3-plugins/js/sankey.js" | prepend: site.baseurl }}"></script>
 <script type="text/javascript" src="{{ "/assets/3rdparty/crossfilter/js/crossfilter.min.js" | prepend: site.baseurl }}"></script>
 <script type="text/javascript" src="{{ "/assets/js/app-sankey.js" | prepend: site.baseurl }}"></script>
@@ -36,55 +76,136 @@ layout: default
   max-width: 600px;
 }
 
+.container-fluid {
+    padding: 0;
+}
+
+.container-fluid > div:first-child {padding-left: 0;}
+.container-fluid > div:last-child {padding-right: 0;}
+
+/* Widgets style */
+
+label {margin-top: 12px;}
+
+.multiSelect > .multiSelectButton,
+.multiSelect > .checkboxLayer,
+.multiSelect .checkBoxContainer,
+.multiSelect .multiSelectItem,
+.multiSelect .multiSelectItem * {
+    width: 100%;
+}
+
+.multiSelect > .multiSelectButton {
+    text-align: left;
+}
+
+.multiSelect .multiSelectItem span {
+    display: inline-block;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+}
+
 /* Sankey diagram */
 
 #sankey-container {
   padding: 20px 0;
 }
 
-svg {
+#sankey-container svg {
   font: 10px sans-serif
 }
 
-.entity rect {
+#sankey-container .entity rect {
   cursor: pointer;
   fill-opacity: .9;
   shape-rendering: crispEdges;
 }
 
-.entity.rig rect {
+#sankey-container .entity.rig rect {
   fill: #53777A;
   stroke: rgba(40, 58, 59, 1.0);
 }
 
-.entity.company rect {
+#sankey-container .entity.company rect {
   fill: #C02942;
   stroke: rgba(94, 20, 32, 1.0);
 }
 
-.entity.cflag rect, .entity.rflag rect {
+#sankey-container .entity.cflag rect, #sankey-container .entity.rflag rect {
   fill: #ECD078;
   stroke: rgba(115, 101, 58, 1.0);
 }
 
-.entity text {
+#sankey-container .entity text {
   pointer-events: none;
   text-shadow: 0 1px 0 #fff;
 }
 
-.relation {
+#sankey-container .relation {
   fill: none;
   stroke: #000;
   stroke-opacity: .2;
 }
 
-/* Selected stuff */
-
-.relation.selected {
+#sankey-container .relation.selected {
   stroke-opacity: .6;
 }
 
-.entity.selected text {
+/* Network style */
+
+#network-container .relation {
+    stroke: #ECD078;
+    stroke-width: 2px;
+}
+#network-container .relation-manager {stroke: #D95B43;}
+#network-container .relation-operator {stroke: #542437;}
+
+#network-container .entity {stroke-width: 1px;}
+#network-container .entity-rig {
+    fill: #53777A;
+    stroke: rgba(110, 158, 162, 1.0);
+}
+#network-container .entity-company {
+    fill: #C02942;
+    stroke: rgba(255, 59, 88, 1.0);
+}
+
+#network-container .group {
+    fill: rgba(255, 255, 255, 0.25);
+    stroke: rgba(255, 255, 255, 0.33);
+    stroke-width: 1px;
+}
+
+#network-container text.label {
+    fill: white;
+    font-size: 8px;
+}
+
+/* Map style */
+
+#map-container .graticule {
+  fill: none;
+  stroke: #777;
+  stroke-width: .5px;
+  stroke-opacity: .5;
+}
+
+#map-container .land {
+  fill: #222;
+}
+
+#map-container .boundary {
+  fill: none;
+  stroke: #fff;
+  stroke-width: .5px;
+}
+
+#map-container .marker1, #map-container .marker2 {}
+
+#map-container .connection {
+    stroke: #C02942;
+    stroke-width: 0.5px;
 }
 
 </style>
