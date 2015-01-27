@@ -10,30 +10,28 @@
         return s.replace(/[^A-Za-z0-9-]+/g, '-');
     }
 
+    function createDrawnObject(model) {
+        return {
+            m: model,
+            width: 60,
+            height: 60,
+            setSize: function(w, h) {this.width = w; this.height = h;},
+            getLabel: function() {return this.m.name;},
+            resetCoordinates: function() {this.x = 0.0; this.y = 0.0;},
+        };
+    }
+
     var Relation = function(source, target, type) {
         this.source = source;
         this.target = target;
         this.type = type;
-        this.value = 1.0;
     };
 
     var Entity = function(name, type) {
         this.name = name;
         this.type = type;
         this.slug = slugify(name);
-        this.infoID = "info-" + this.type + "-" + this.slug;
-
-        this.getLabel = function() {
-            return this.name;
-        };
-
-        this.setSize = function(w, h) {
-            this.width = w;
-            this.height = h;
-        };
-        this.setSize(60, 60);
     };
-
 
     app.directive("flagPopup", function() {
         return {
@@ -47,7 +45,7 @@
     });
 
 
-    app.factory("entities", ['$location', '$q', function($location, $q) {
+    app.factory("model", ['$location', '$q', function($location, $q) {
 
         var allEntities = [];
         // DATA to be filtered
@@ -118,7 +116,6 @@
                 // add the company
                 if (!uniqueCompanies[obj.name]) {
                     company = new Entity(obj.name, "company");
-                    company.setSize(50, 50);
                     uniqueCompanies[obj.name] = company;
                     allEntities.push(company);
                     processCompanyFlag(company);
@@ -251,7 +248,7 @@
     }]);
 
 
-    app.controller("SankeyController", ['entities', '$compile', '$scope', function($entities, $compile, $scope) {
+    app.controller("SankeyController", ['model', '$compile', '$scope', function($model, $compile, $scope) {
 
         /* Get data */
 
@@ -263,7 +260,7 @@
             });
         });
 
-        $entities.activeNetwork.then(function(network) {
+        $model.activeNetwork.then(function(network) {
             updateSankey(network);
         });
 
@@ -292,27 +289,50 @@
             that don't have those. This is to get flag, rig and company
             entities aligned.
             */
-            var entities = network.entities.slice(0);
-            var relations = network.relations.slice(0);
+            var entities = network.entities.map(function(ent) {
+                var obj = createDrawnObject(ent);
+                ent._drawnObject = obj;
+                return obj;
+            });
+            var relations = network.relations.map(function(rel) {
+                var obj = createDrawnObject(rel);
+                obj.source = rel.source._drawnObject;
+                obj.target = rel.target._drawnObject;
+                obj.value = 1.0;
+                return obj;
+            });
             network.rigs.forEach(function(obj) {
                 var dudEntity;
+                var dudRelation;
                 if (!obj.flag) {
-                    dudEntity = new Entity("", "dud");
+                    dudEntity = createDrawnObject("dud");
                     entities.push(dudEntity);
-                    relations.push(new Relation(dudEntity, obj, "dud"));
+                    dudRelation = createDrawnObject("dud");
+                    dudRelation.source = dudEntity;
+                    dudRelation.target = obj._drawnObject;
+                    dudRelation.value = 1.0;
+                    relations.push(dudRelation);
                 }
                 if (!obj.owner && !obj.manager && !obj.operator) {
-                    dudEntity = new Entity("", "dud");
+                    dudEntity = createDrawnObject("dud");
                     entities.push(dudEntity);
-                    relations.push(new Relation(obj, dudEntity, "dud"));
+                    dudRelation = createDrawnObject("dud");
+                    dudRelation.source = obj._drawnObject;
+                    dudRelation.target = dudEntity;
+                    dudRelation.value = 1.0;
+                    relations.push(dudRelation);
                 }
             });
             network.companies.forEach(function(obj) {
                 if (obj.flag)
                     return;
-                var dudEntity = new Entity("", "dud");
+                var dudEntity = createDrawnObject("dud");
                 entities.push(dudEntity);
-                relations.push(new Relation(obj, dudEntity, "dud"));
+                var dudRelation = createDrawnObject("dud");
+                dudRelation.source = obj._drawnObject;
+                dudRelation.target = dudEntity;
+                dudRelation.value = 1.0;
+                relations.push(dudRelation);
             });
 
             sankey
@@ -321,7 +341,7 @@
                 .layout(32);
 
             // remove duds after doing layout
-            function isNotDud(obj) {return obj.type !== "dud";}
+            function isNotDud(obj) {return obj.m !== "dud";}
             entities = entities.filter(isNotDud);
             relations = relations.filter(isNotDud);
 
@@ -333,13 +353,13 @@
                 .data(relations)
                 .enter()
                 .append("path")
-                .attr("class", function(d) {return "relation " + d.type.replace(/ /g, "");})
+                .attr("class", function(d) {return "relation " + d.m.type.replace(/ /g, "");})
                 .attr("d", pathGeneratorSK)
                 .style("stroke-width", function(d) {return Math.max(1, d.dy);})
                 .sort(function(a, b) {return b.dy - a.dy;});
 
             relation.append("title")
-                .text(function(d) {return d.source.name + " → " + d.target.name;});
+                .text(function(d) {return d.source.m.name + " → " + d.target.m.name;});
 
             var entity = svgSK.append("g")
                 .attr("class", "entities")
@@ -347,7 +367,7 @@
                 .data(entities)
                 .enter()
                 .append("g")
-                .attr("class", function(d) {return "entity " + d.type.replace(/ /g, "");})
+                .attr("class", function(d) {return "entity " + d.m.type.replace(/ /g, "");})
                 .attr("transform", function(d) {return "translate(" + d.x + "," + d.y + ")";});
 
             entity.append("rect")
@@ -356,14 +376,14 @@
                 .on("mouseover", mouseover)
                 .on("mouseout", mouseout)
                 .append("title")
-                .text(function(d) {return d.name;});
+                .text(function(d) {return d.m.name;});
 
             entity.selectAll('.cflag > rect, .rflag > rect')
                 .each(function(d) {
                     $(this).popover({
-                        title: d.name,
+                        title: d.m.name,
                         content: function() {
-                            return $compile('<flag-popup data="flagData[\'' + d.name + '\']"></flag-popup>')($scope);
+                            return $compile('<flag-popup data="flagData[\'' + d.m.name + '\']"></flag-popup>')($scope);
                         },
                         html: true,
                         container: $("body")
@@ -376,63 +396,63 @@
                 .attr("dy", ".35em")
                 .attr("text-anchor", "end")
                 .attr("transform", null)
-                .text(function(d) {return d.name;})
+                .text(function(d) {return d.m.name;})
                 .filter(function(d) {return d.x < widthSK / 2;})
                 .attr("x", 6 + sankey.nodeWidth())
                 .attr("text-anchor", "start");
 
             function setSelected(el, d) {
                 d3.select(el)
-                    .attr("class", "selected relation " + d.type.replace(/ /g, ""));
+                    .attr("class", "selected relation " + d.m.type.replace(/ /g, ""));
             }
 
             function mouseover(ent) {
                 d3.select(this.parentNode)
-                    .attr("class", "selected entity " + ent.type.replace(/ /g, ""));
+                    .attr("class", "selected entity " + ent.m.type.replace(/ /g, ""));
 
                 var rigs = {};
                 var companies = {};
 
-                if (ent.type === "rig") {
+                if (ent.m.type === "rig") {
                     relation.each(function(d) {
                         if (d.source === ent || d.target === ent)
                             setSelected(this, d);
-                        else if (d.type === 'is based in' &&
-                                 (d.source === ent.owner ||
-                                  d.source === ent.manager ||
-                                  d.source === ent.operator))
+                        else if (d.m.type === 'is based in' &&
+                                 (d.m.source === ent.m.owner ||
+                                  d.m.source === ent.m.manager ||
+                                  d.m.source === ent.m.operator))
                             setSelected(this, d);
                     });
                 }
-                else if (ent.type === "company") {
+                else if (ent.m.type === "company") {
                     relation.each(function(d) {
                         if (d.source === ent)
                             setSelected(this, d);
                         else if (d.target === ent) {
                             setSelected(this, d);
-                            rigs[d.source.name] = d.source;
+                            rigs[d.m.source.name] = d.source;
                         }
                     });
                     relation.each(function(d) {
-                        if (d.target.type === 'rig' && rigs[d.target.name])
+                        if (d.m.target.type === 'rig' && rigs[d.m.target.name])
                             setSelected(this, d);
                     });
                 }
-                else if (ent.type === "rflag") {
+                else if (ent.m.type === "rflag") {
                     relation.each(function(d) {
                         if (d.source === ent) {
-                            rigs[d.target.name] = d.target;
+                            rigs[d.m.target.name] = d.target;
                             setSelected(this, d);
                         }
                     });
                     relation.each(function(d) {
-                        if (d.source.type === 'rig' && rigs[d.source.name]) {
-                            companies[d.target.name] = d.target;
+                        if (d.m.source.type === 'rig' && rigs[d.m.source.name]) {
+                            companies[d.m.target.name] = d.target;
                             setSelected(this, d);
                         }
                     });
                     relation.each(function(d) {
-                        if (d.source.type === 'company' && companies[d.source.name])
+                        if (d.m.source.type === 'company' && companies[d.m.source.name])
                             setSelected(this, d);
                     });
                 }
@@ -440,18 +460,18 @@
                 else {
                     relation.each(function(d) {
                         if (d.target === ent) {
-                            companies[d.source.name] = d.source;
+                            companies[d.m.source.name] = d.source;
                             setSelected(this, d);
                         }
                     });
                     relation.each(function(d) {
-                        if (d.target.type === 'company' && companies[d.target.name]) {
-                            rigs[d.source.name] = d.source;
+                        if (d.m.target.type === 'company' && companies[d.m.target.name]) {
+                            rigs[d.m.source.name] = d.source;
                             setSelected(this, d);
                         }
                     });
                     relation.each(function(d) {
-                        if (d.target.type === "rig" && rigs[d.target.name])
+                        if (d.m.target.type === "rig" && rigs[d.m.target.name])
                             setSelected(this, d);
                     });
                 }
@@ -459,11 +479,11 @@
 
             function mouseout(ent) {
                 d3.select(this.parentNode)
-                    .attr("class", "entity " + ent.type.replace(/ /g, ""));
+                    .attr("class", "entity " + ent.m.type.replace(/ /g, ""));
 
                 svgSK
                     .selectAll('.relation.selected')
-                    .attr("class", function(d) {return "relation " + d.type.replace(/ /g, "");});
+                    .attr("class", function(d) {return "relation " + d.m.type.replace(/ /g, "");});
             }
 
         }
@@ -471,9 +491,9 @@
     }]);
 
 
-    app.controller("MapController", ['$scope', 'entities', function($scope, $entities) {
+    app.controller("MapController", ['$scope', 'model', function($scope, $model) {
 
-        $scope.activeLocation = $entities.activeLocation;
+        $scope.activeLocation = $model.activeLocation;
 
     }]);
 
