@@ -15,10 +15,8 @@ layout: default
 <div ng-controller="NetworkController as network" class="container-fluid">
     <!-- query controls -->
     <div class="col-md-2">
-        <form ng-submit="network.createViews()" role="form">
+        <form ng-submit="network.update()" role="form">
             <span class="text-muted">Select oil rigs by choosing 0 or more filtering criteria and clicking <em>Show rigs</em>.</span>
-            <label>Locations:</label>
-            <div multi-select input-model="locationValues" button-label="name" item-label="name" tick-property="ticked" default-label="any country"></div>
             <label>Owners:</label>
             <div multi-select input-model="ownerValues" button-label="name" item-label="name" tick-property="ticked" default-label="anyone"></div>
             <label>Operators:</label>
@@ -62,6 +60,7 @@ layout: default
 <script type="text/javascript" src="{{ "/assets/3rdparty/crossfilter/js/crossfilter.min.js" | prepend: site.baseurl }}"></script>
 <script type="text/javascript" src="{{ "/assets/js/app-sankey.js" | prepend: site.baseurl }}"></script>
 
+<link rel="stylesheet" href="{{ "/assets/3rdparty/angular-multi-select/css/angular-multi-select.css" | prepend: site.baseurl }}" />
 <style>
 
 /* General */
@@ -158,15 +157,15 @@ label {margin-top: 12px;}
     stroke: #ECD078;
     stroke-width: 2px;
 }
-#network-container .relation-manager {stroke: #D95B43;}
-#network-container .relation-operator {stroke: #542437;}
+#network-container .relation.ismanagedby {stroke: #D95B43;}
+#network-container .relation.isoperatedby {stroke: #542437;}
 
 #network-container .entity {stroke-width: 1px;}
-#network-container .entity-rig {
+#network-container .entity.rig {
     fill: #53777A;
     stroke: rgba(110, 158, 162, 1.0);
 }
-#network-container .entity-company {
+#network-container .entity.company {
     fill: #C02942;
     stroke: rgba(255, 59, 88, 1.0);
 }

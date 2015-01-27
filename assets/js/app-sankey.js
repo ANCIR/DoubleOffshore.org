@@ -1,6 +1,6 @@
 (function(){
     var app = angular
-        .module("doubleoffshore", [])
+        .module("doubleoffshore", ["multi-select"])
         .config(function($interpolateProvider) {
             $interpolateProvider.startSymbol('{[').endSymbol(']}');
         });
@@ -487,6 +487,402 @@
                     .attr("class", function(d) {return "relation " + d.m.type.replace(/ /g, "");});
             }
 
+        }
+
+    }]);
+
+
+    app.controller("NetworkController", ['model', '$scope', function($model, $scope) {
+
+        var country_centroids;
+        // DATA to be filtered/grouped
+        var rigs = crossfilter();
+        // DIMENSIONS
+        var rigsByFlag = rigs.dimension(function(d) {return d.raw_flag;});
+        var rigsByManager = rigs.dimension(function(d) {return d.raw_manager;});
+        var rigsByOperator = rigs.dimension(function(d) {return d.raw_operator;});
+        var rigsByOwner = rigs.dimension(function(d) {return d.raw_owner;});
+        // FILTER VALUES
+        $scope.flagValues = [];
+        $scope.managerValues = [];
+        $scope.operatorValues = [];
+        $scope.ownerValues = [];
+        // GROUPING VALUES
+        $scope.groupByOptions = {
+            'flag': 'raw_flag',
+            'drilling depth': 'raw_drilling_depth',
+            'water depth': 'raw_rated_water_depth',
+            'owner': 'raw_owner',
+            'operator': 'raw_operator',
+            'manager': 'raw_manager'
+        };
+        $scope.groupByField = null;
+
+        /* Network canvas setup */
+
+        var svgGraph = createSVG($("#network-container")[0]);
+        var sizeGraph = svgGraph[1];
+        svgGraph = svgGraph[0];
+        var nodePadding = 8;
+
+        var _cola = cola.d3adaptor()
+            .linkDistance(120)
+            .avoidOverlaps(true)
+            .size(sizeGraph);
+
+        _cola.on("tick", function() {
+            svgGraph.selectAll(".relation")
+                .attr("x1", function (d) {return d.source.x;})
+                .attr("y1", function (d) {return d.source.y;})
+                .attr("x2", function (d) {return d.target.x;})
+                .attr("y2", function (d) {return d.target.y;});
+
+            svgGraph.selectAll(".entity")
+                .attr("x", function (d) {return d.x - d.width / 2 + nodePadding;})
+                .attr("y", function (d) {return d.y - d.height / 2 + nodePadding;});
+
+            svgGraph.selectAll(".label")
+                .attr("x", function (d) {return d.x - d.width / 2 + nodePadding;})
+                 .attr("y", function (d) {return d.y + d.height / 2 - nodePadding + this.getBBox().height;});
+
+            svgGraph.selectAll(".group")
+                .attr("x", function (d) {return d.bounds.x;})
+                .attr("y", function (d) {return d.bounds.y;})
+                .attr("width", function (d) {return d.bounds.width();})
+                .attr("height", function (d) {return d.bounds.height();});
+        });
+
+        /* Map setup */
+
+        var svgMap = createSVG($("#map-container")[0], [-87, 0], 1.15);
+        var sizeMap = svgMap[1];
+        svgMap = svgMap[0];
+        var projection = d3.geo.mercator()
+            .scale((sizeMap[0] + 1) / 2 / Math.PI)
+            .translate([sizeMap[0] / 2, sizeMap[1] / 2])
+            .precision(0.1);
+
+        /* Get data */
+
+        d3.json(SITE_CONFIG.baseurl + "/data/world-50m.json", function(error, data) {
+            var path = d3.geo.path()
+                .projection(projection);
+
+            svgMap.append("path")
+                .datum(topojson.feature(data, data.objects.land))
+                .attr("class", "land")
+                .attr("d", path);
+
+            svgMap.append("path")
+                .datum(topojson.mesh(data, data.objects.countries,
+                                     function(a, b) {return a !== b;}))
+                .attr("class", "boundary")
+                .attr("d", path);
+        });
+
+        d3.json(SITE_CONFIG.baseurl + "/data/country_centroids.json", function(error, data){
+            // swap coordinates around to be [longitude, latitude]
+            for (var loc in data) {
+                var coords = data[loc];
+                data[loc] = [coords[1], coords[0]];
+            }
+            country_centroids = data;
+        });
+
+        this.update = function() {
+            $model.activeNetwork.then(function(network) {
+                updateNetworkAndMap(network);
+            });
+        };
+        this.update();
+
+        function updateNetworkAndMap(network) {
+
+            if (rigs.size() === 0) {
+                rigs.add(network.rigs);
+                var groups = [
+                    rigsByFlag.group(),
+                    rigsByManager.group(),
+                    rigsByOperator.group(),
+                    rigsByOwner.group()
+                ];
+                var makeOptions = function(obj) {return {name: obj.key, ticked: false};};
+                $scope.flagValues = groups[0].all().map(makeOptions);
+                $scope.managerValues = groups[1].all().map(makeOptions);
+                $scope.operatorValues = groups[2].all().map(makeOptions);
+                $scope.ownerValues = groups[3].all().map(makeOptions);
+                groups.forEach(function(obj){obj.dispose();});
+
+                $scope.$watch('groupByField', function(newV, oldV) {groupBy(newV);});
+            }
+
+            createViews(network);
+
+        }
+
+        /* Functions to manipulate relations and entities */
+
+        function applyActiveFilters() {
+            function getSelectedValues(values) {
+                var selected = {};
+                values
+                    .filter(function(obj) {return obj.ticked;})
+                    .forEach(function(obj) {selected[obj.name] = true;});
+                return selected;
+            }
+
+            function oneOf(selected) {
+                return function(val) {return selected[val];};
+            }
+
+            // apply all filters
+            [
+                [rigsByFlag, $scope.flagValues],
+                [rigsByManager, $scope.managerValues],
+                [rigsByOperator, $scope.operatorValues],
+                [rigsByOwner, $scope.ownerValues]
+            ].forEach(function(arr){
+                arr[0].filterAll();
+                var selected = getSelectedValues(arr[1]);
+                if (!($.isEmptyObject(selected)))
+                    arr[0].filterFunction(oneOf(selected));
+            });
+        }
+
+        function createNetwork(network) {
+            clearNetwork();
+
+            applyActiveFilters();
+            var entities = [];
+            var entityMap = {};
+            rigsByFlag.top(Infinity).forEach(function(rig) {
+                var source = createDrawnObject(rig);
+                rig._drawnObject = source;
+                entityMap[rig.raw_id] = rig;
+                entities.push(source);
+                var companies = [
+                    rig.owner,
+                    rig.manager,
+                    rig.operator
+                ];
+                companies.forEach(function(company) {
+                    if (company === undefined)
+                        return;
+                    if (!entityMap[company.name]) {
+                        var target = createDrawnObject(company);
+                        company._drawnObject = target;
+                        target.setSize(50, 50);
+                        entities.push(target);
+                        entityMap[company.name] = target;
+                    }
+                });
+            });
+            var relations = network.relations
+                .filter(function(rel) {
+                    return (entityMap[rel.source.raw_id] &&
+                            entityMap[rel.target.name]);
+                })
+                .map(function(rel) {
+                    var obj = createDrawnObject(rel);
+                    obj.source = rel.source._drawnObject;
+                    obj.target = rel.target._drawnObject;
+                    return obj;
+                });
+
+            _cola
+                .nodes(entities)
+                .links(relations);
+            renderRelations(relations, svgGraph, _cola);
+            renderEntities(entities, svgGraph, _cola, nodePadding);
+        }
+
+        function clearNetwork() {
+            svgGraph.selectAll('.relation').remove();
+            svgGraph.selectAll('.entity').remove();
+            svgGraph.selectAll('.label').remove();
+            svgGraph.selectAll('.group').remove();
+            $scope.groupByField = null;
+            _cola
+                .nodes([])
+                .links([])
+                .groups([])
+                .constraints([]);
+        }
+
+        function createMapConnections() {
+            clearMapConnections();
+
+            var connections = {};
+            _cola.nodes().forEach(function(obj) {
+                if (!obj.m.raw_country || !obj.m.raw_flag)
+                    return;
+                if (!connections[obj.m.raw_country])
+                    connections[obj.m.raw_country] = {};
+                if (!connections[obj.m.raw_country][obj.m.raw_flag])
+                    connections[obj.m.raw_country][obj.m.raw_flag] = 0;
+                connections[obj.m.raw_country][obj.m.raw_flag]++;
+            });
+
+            var flattened = [];
+            for (var loc in connections) {
+                for (var flag in connections[loc]) {
+                    var coords1 = projection(country_centroids[loc]);
+                    var coords2 = projection(country_centroids[flag]);
+                    flattened.push({
+                        total: connections[loc][flag],
+                        x1: coords1[0],
+                        y1: coords1[1],
+                        x2: coords2[0],
+                        y2: coords2[1]
+                    });
+                }
+            }
+
+            renderMapConnections(flattened, svgMap);
+        }
+
+        function clearMapConnections() {
+            svgMap.selectAll('.connection').remove();
+            svgMap.selectAll('.marker1').remove();
+            svgMap.selectAll('.marker2').remove();
+        }
+
+        function createViews(network) {
+            createNetwork(network);
+            createMapConnections();
+        }
+
+        function groupBy(dimension) {
+            svgGraph.selectAll('.group').remove();
+            if (!dimension) {
+                _cola
+                    .groups([])
+                    .start(30, 30, 30);
+                return;
+            }
+
+            var values = {};
+            _cola.nodes().forEach(function(obj, i) {
+                if (!obj.m[dimension])
+                    return;
+                if (!values[obj.m[dimension]])
+                    values[obj.m[dimension]] = [];
+                values[obj.m[dimension]].push(i);
+                obj.resetCoordinates();
+            });
+            var groups = [];
+            for (var value in values)
+                groups.push({leaves: values[value]});
+
+            _cola.groups(groups);
+            renderGroups(groups, svgGraph, _cola);
+        }
+
+        function renderEntities(entities, svg, _cola, padding) {
+            var entity = svg.selectAll(".entity");
+            var label = svg.selectAll(".label");
+            if (!padding)
+                padding = 0;
+            entity
+                .data(entities)
+                .enter()
+                .append("rect")
+                .attr("class", function (d) {return "entity " + d.m.type;})
+                .attr("width", function (d) {return d.width - 2 * padding;})
+                .attr("height", function (d) {return d.height - 2 * padding;})
+                .attr("rx", 5).attr("ry", 5)
+                .call(_cola.drag);
+            label
+                .data(entities)
+                .enter()
+                .append("text")
+                .attr("class", "label")
+                .text(function (d) {return d.getLabel();})
+                .call(_cola.drag);
+            _cola.start(30, 30, 30);
+        }
+
+        function renderRelations(relations, svg, _cola) {
+            var relation = svg.selectAll(".relation");
+            relation
+                .data(relations)
+                .enter()
+                .append("line")
+                .attr("class", function (d) {return "relation " + d.m.type.replace(/ /g, "");});
+            _cola.start();
+        }
+
+        function renderGroups(groups, svg, _cola) {
+            var group = svg.selectAll(".group");
+            group
+                .data(groups)
+                .enter()
+                .insert("rect", ".relation")
+                .attr("rx", 5).attr("ry", 5)
+                .attr("class", "group");
+            _cola.start(30, 30, 30);
+        }
+
+        function renderMapConnections(connections, svg) {
+            var connection = svg.selectAll(".connection");
+            var marker1 = svg.selectAll(".marker1");
+            var marker2 = svg.selectAll(".marker2");
+            connection
+                .data(connections)
+                .enter()
+                .append("line")
+                .attr("class", "connection")
+                .attr("x1", function (d) {return d.x1;})
+                .attr("y1", function (d) {return d.y1;})
+                .attr("x2", function (d) {return d.x2;})
+                .attr("y2", function (d) {return d.y2;});
+            marker1
+                .data(connections)
+                .enter()
+                .append("image")
+                .attr("class", "marker1")
+                .attr("xlink:href", SITE_CONFIG.baseurl + "/assets/img/map_marker.svg")
+                .attr("width", 12)
+                .attr("height", 12)
+                .attr("x", function (d) {return d.x1 - 6;})
+                .attr("y", function (d) {return d.y1 - 10;});
+            marker2
+                .data(connections)
+                .enter()
+                .append("image")
+                .attr("class", "marker2")
+                .attr("xlink:href", SITE_CONFIG.baseurl + "/assets/img/map_marker.svg")
+                .attr("width", 12)
+                .attr("height", 12)
+                .attr("x", function (d) {return d.x2 - 6;})
+                .attr("y", function (d) {return d.y2 - 10;});
+        }
+
+        function createSVG(el, startTranslation, startScale) {
+            var width = $(el).width();
+            var height = 500;
+
+            var svg = d3.select(el).append('svg')
+                .attr("height", height)
+                .attr("width", "100%")
+                .attr("pointer-events", "all");
+
+            // set up zoom
+            var zoomer = d3.behavior.zoom();
+            var zoomhandle = svg.append("rect")
+                .attr("class", "background")
+                .attr("width", "100%")
+                .attr("height", "100%")
+                .call(zoomer.on("zoom", function(){
+                    svg.attr("transform", "translate(" + d3.event.translate + ") scale(" + d3.event.scale + ")");
+                }));
+            svg = svg.append("g");
+            zoomer
+                .translate(startTranslation ? startTranslation : [width / 2, height / 2])
+                .scale(startScale ? startScale : 0.3)
+                .event(zoomhandle);
+
+            return [svg, [width, height]];
         }
 
     }]);
