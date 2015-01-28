@@ -240,6 +240,10 @@
 
         }
 
+        activeNetwork.promise.then(function(nw) {
+                console.log(nw);
+        });
+
         return {
             'activeNetwork': activeNetwork.promise,
             'activeLocation': activeLocation,
