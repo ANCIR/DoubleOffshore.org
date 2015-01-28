@@ -1,13 +1,20 @@
 import requests
 import unicodecsv
+from collections import defaultdict
 from StringIO import StringIO
 from pprint import pprint
 
-from normality import slugify
+from normality import slugify as slugify_
 
 from doubleoffshore.core import app
 
 URL = 'https://docs.google.com/spreadsheets/d/%s/export?format=csv&id=%s&gid=%s' # noqa
+
+
+def slugify(text, sep='-'):
+    if text is None:
+        return
+    return slugify_(text, sep=sep)
 
 
 def cleanup(row):
@@ -16,6 +23,10 @@ def cleanup(row):
         k = slugify(k, sep='_')
         if isinstance(v, basestring):
             v = v.strip()
+            if not len(v):
+                continue
+        if v is None:
+            continue
         data[k] = v
     return data
 
@@ -32,38 +43,43 @@ def get_sheet(sheet):
 class DataConverter(object):
 
     def __init__(self):
-        self.entities = {}
+        self.entities = dict()
         self.rigs_data = get_sheet(app.config.get('RIGS_SHEET'))
         self.companies_data = get_sheet(app.config.get('COMPANIES_SHEET'))
-
+        for company in self.companies_data:
+            flag = company.get('based') or \
+                company.get('ultimate_owner_jurisdiction')
+            company['flag'] = self.make_entity(flag, 'cflag')
+            self.make_entity(company.get('company'), 'company', raw=company)
+            
     def make_entity(self, name, type_, raw={}):
-        entity = {'name': name, 'slug': slugify(name), 'type': type_}
-        for k, v in raw.items():
-            entity['raw_%s' % k] = v
-        self.entities[(type_, entity['slug'])] = entity
-        return entity
-
-    def get_company(self, name):
         slug = slugify(name)
         if not slug:
-            return None
-        k = ('company', slug)
-        if k not in self.entities:
-            self.make_entity(name, 'company')
-            # TODO process company flags
-        return self.entities[k]
+            return
+        entity = {'name': name, 'slug': slug, 'type': type_}
+        
+        for k, v in raw.items():
+            entity['raw_%s' % k] = v
+        key = (type_, slug)
+        if key in self.entities:
+            self.entities[key].update(entity)
+        else:
+            self.entities[key] = entity
+        return slug
 
     def by_country(self, country):
         for rig_data in self.rigs_data:
-            rig = self.make_entity(rig_data['name'], 'rig', raw=rig_data)
+            rig_slug = self.make_entity(rig_data['name'], 'rig', raw=rig_data)
+            rig = self.entities[('rig', rig_slug)]
             
             for role in ['owner', 'operator', 'manager']:
-                rig[role] = self.get_company(rig_data.get(role))
+                rig[role] = self.make_entity(rig_data.get(role), 'company')
 
-        return {
-            #'rigs': rigs,
-            'entities': self.entities
-        }
+            rig['flag'] = self.make_entity(rig_data.get('flag'), 'rflag')
+            rig['location'] = self.make_entity(rig_data.get('country'),
+                                               'location')
+
+        return {'entities': self.entities.values()}
 
 if __name__ == '__main__':
     data = DataConverter().by_country('Nigeria')
