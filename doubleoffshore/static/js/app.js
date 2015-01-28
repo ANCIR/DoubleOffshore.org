@@ -564,7 +564,7 @@
 
         /* Get data */
 
-        d3.json("/static/data/world-topo-min.json", function(error, data) {
+        d3.json("/static/maps/world-topo-min.json", function(error, data) {
             var path = d3.geo.path()
                 .projection(projection);
             var countries = topojson.feature(data, data.objects.countries).features;
@@ -576,7 +576,7 @@
                 .attr("d", path);
         });
 
-        d3.json("/static/data/country_centroids.json", function(error, data){
+        d3.json("/static/maps/country_centroids.json", function(error, data){
             // swap coordinates around to be [longitude, latitude]
             for (var loc in data) {
                 var coords = data[loc];
