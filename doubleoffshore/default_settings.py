@@ -1,3 +1,4 @@
+import os
 
-DEBUG = False
-ASSETS_DEBUG = False
+DEBUG = bool(os.environ.get('DEBUG'))
+ASSETS_DEBUG = DEBUG

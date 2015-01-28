@@ -14,3 +14,6 @@ app = Flask(__name__)
 app.config.from_object(default_settings)
 assets = Environment(app)
 
+if not app.debug:
+    assets.auto_build = False
+    assets.manifest = 'file'
