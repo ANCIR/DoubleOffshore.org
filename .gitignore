@@ -1,0 +1,11 @@
+jekyll-cache/_site
+.sass-cache
+bower_components
+*.pyc
+*.DS_Store
+*.egg-info
+dist/*
+*.env
+
+doubleoffshore/static/.webassets-cache/*
+doubleoffshore/static/vendor/*

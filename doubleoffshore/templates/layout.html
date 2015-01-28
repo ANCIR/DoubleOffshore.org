@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html ng-app="doubleoffshore">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>{% block page_title %}{% endblock %} - The Double Offshore</title>
+    <meta name="author" content="African Network of Centers for Investigative Reporting" />
+    
+    {% assets filters="less,cssmin,cssrewrite", output="assets/style.css",
+        "vendor/angular-multi-select/angular-multi-select.css",
+        "style/style.less" %}
+      <link type="text/css" href="{{ ASSET_URL }}" rel="stylesheet">
+    {% endassets %}
+    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+  </head>
+  <body>
+
+    {% include '_header.html' %}
+
+    <div class="page-content">
+      <div class="container">
+        {% block content %}{% endblock %}
+      </div>
+    </div>
+
+    {% include '_footer.html' %}
+
+    {% assets filters="uglifyjs", output="assets/script.js",
+        "vendor/jquery/dist/jquery.js",
+        "vendor/bootstrap/dist/js/bootstrap.js",
+        "vendor/angular/angular.js",
+        "vendor/angular-multi-select/angular-multi-select.js",
+        "vendor/d3/d3.js",
+        "vendor/d3-geo-projection/index.js",
+        "vendor/topojson/topojson.js",
+        "vendor/webcola/WebCola/cola.v3.min.js",
+        "vendor/d3-plugins/sankey/sankey.js",
+        "vendor/crossfilter/crossfilter.js",
+        "js/app.js" %}
+      <script src="{{ ASSET_URL }}"></script>
+    {% endassets %}
+
+  </body>
+</html>
