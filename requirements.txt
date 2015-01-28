@@ -11,6 +11,6 @@ scrapekit
 cssmin
 gunicorn
 unicodecsv
-normality
+normality>=0.2.1
 pylibmc
 flask-cache

@@ -1,20 +1,13 @@
 import requests
 import unicodecsv
-from collections import defaultdict
 from StringIO import StringIO
 from pprint import pprint
 
-from normality import slugify as slugify_
+from normality import slugify
 
 from doubleoffshore.core import app, cache
 
 URL = 'https://docs.google.com/spreadsheets/d/%s/export?format=csv&id=%s&gid=%s' # noqa
-
-
-def slugify(text, sep='-'):
-    if text is None:
-        return
-    return slugify_(text, sep=sep)
 
 
 def cleanup(row):
