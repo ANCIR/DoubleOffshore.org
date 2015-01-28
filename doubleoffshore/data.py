@@ -6,7 +6,7 @@ from pprint import pprint
 
 from normality import slugify as slugify_
 
-from doubleoffshore.core import app
+from doubleoffshore.core import app, cache
 
 URL = 'https://docs.google.com/spreadsheets/d/%s/export?format=csv&id=%s&gid=%s' # noqa
 
@@ -81,6 +81,11 @@ class DataConverter(object):
 
         return {'entities': self.entities.values()}
 
+
+@cache.memoize(84600)
+def country_data(country):
+    return DataConverter().by_country(country)
+
+
 if __name__ == '__main__':
-    data = DataConverter().by_country('Nigeria')
-    pprint(data)
+    pprint(country_data('Nigeria'))

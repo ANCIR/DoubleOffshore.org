@@ -1,6 +1,8 @@
 import logging
 from flask import Flask
 from flask.ext.assets import Environment
+from flask.ext.cache import Cache
+
 
 from doubleoffshore import default_settings
 
@@ -13,6 +15,8 @@ logging.basicConfig(level=logging.DEBUG)
 app = Flask(__name__)
 app.config.from_object(default_settings)
 assets = Environment(app)
+cache = Cache(app)
+
 
 if not app.debug:
     assets.auto_build = False

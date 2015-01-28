@@ -12,3 +12,5 @@ cssmin
 gunicorn
 unicodecsv
 normality
+pylibmc
+flask-cache
