@@ -47,8 +47,8 @@ class DataConverter(object):
         self.rigs_data = get_sheet(app.config.get('RIGS_SHEET'))
         self.companies_data = get_sheet(app.config.get('COMPANIES_SHEET'))
         for company in self.companies_data:
-            flag = company.get('based') or \
-                company.get('ultimate_owner_jurisdiction')
+            flag = company.get('ultimate_owner_jurisdiction') or \
+                company.get('based')
             company['flag'] = self.make_entity(flag, 'cflag')
             self.make_entity(company.get('company'), 'company', raw=company)
             
