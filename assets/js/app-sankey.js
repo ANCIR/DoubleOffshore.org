@@ -564,19 +564,15 @@
 
         /* Get data */
 
-        d3.json(SITE_CONFIG.baseurl + "/data/world-50m.json", function(error, data) {
+        d3.json(SITE_CONFIG.baseurl + "/data/world-topo-min.json", function(error, data) {
             var path = d3.geo.path()
                 .projection(projection);
-
-            svgMap.append("path")
-                .datum(topojson.feature(data, data.objects.land))
-                .attr("class", "land")
-                .attr("d", path);
-
-            svgMap.append("path")
-                .datum(topojson.mesh(data, data.objects.countries,
-                                     function(a, b) {return a !== b;}))
-                .attr("class", "boundary")
+            var countries = topojson.feature(data, data.objects.countries).features;
+            svgMap.selectAll(".country")
+                .data(countries)
+                .enter()
+                .insert("path")
+                .attr("class", "country")
                 .attr("d", path);
         });
 
