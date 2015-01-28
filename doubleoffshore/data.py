@@ -62,6 +62,8 @@ class DataConverter(object):
 
     def by_country(self, country):
         for rig_data in self.rigs_data:
+            if rig_data.get('country') != country:
+                continue
             rig_slug = self.make_entity(rig_data['name'], 'rig', raw=rig_data)
             rig = self.entities[('rig', rig_slug)]
             
