@@ -1,0 +1,176 @@
+// Core variables and mixins
+@import "../vendor/bootstrap/less/variables.less";
+@import "../vendor/bootstrap/less/mixins.less";
+
+// Local variables
+@theme-color: #559dc0;
+@brand-primary: @theme-color;
+
+// Reset
+@import "../vendor/bootstrap/less/normalize.less";
+@import "../vendor/bootstrap/less/print.less";
+
+// Core CSS
+@import "../vendor/bootstrap/less/scaffolding.less";
+@import "../vendor/bootstrap/less/type.less";
+@import "../vendor/bootstrap/less/code.less";
+@import "../vendor/bootstrap/less/grid.less";
+@import "../vendor/bootstrap/less/tables.less";
+@import "../vendor/bootstrap/less/forms.less";
+@import "../vendor/bootstrap/less/buttons.less";
+
+// Components
+@import "../vendor/bootstrap/less/component-animations.less";
+@import "../vendor/bootstrap/less/glyphicons.less";
+@import "../vendor/bootstrap/less/dropdowns.less";
+@import "../vendor/bootstrap/less/button-groups.less";
+@import "../vendor/bootstrap/less/input-groups.less";
+@import "../vendor/bootstrap/less/navs.less";
+@import "../vendor/bootstrap/less/navbar.less";
+@import "../vendor/bootstrap/less/breadcrumbs.less";
+@import "../vendor/bootstrap/less/pagination.less";
+@import "../vendor/bootstrap/less/pager.less";
+@import "../vendor/bootstrap/less/labels.less";
+@import "../vendor/bootstrap/less/badges.less";
+@import "../vendor/bootstrap/less/jumbotron.less";
+@import "../vendor/bootstrap/less/thumbnails.less";
+@import "../vendor/bootstrap/less/alerts.less";
+@import "../vendor/bootstrap/less/progress-bars.less";
+@import "../vendor/bootstrap/less/media.less";
+@import "../vendor/bootstrap/less/list-group.less";
+@import "../vendor/bootstrap/less/panels.less";
+@import "../vendor/bootstrap/less/wells.less";
+@import "../vendor/bootstrap/less/close.less";
+
+// Components w/ JavaScript
+@import "../vendor/bootstrap/less/modals.less";
+@import "../vendor/bootstrap/less/tooltip.less";
+@import "../vendor/bootstrap/less/popovers.less";
+@import "../vendor/bootstrap/less/carousel.less";
+
+// Utility classes
+@import "../vendor/bootstrap/less/utilities.less";
+@import "../vendor/bootstrap/less/responsive-utilities.less";
+
+
+#info-container .panel-title > a {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.popover {
+  max-width: 600px;
+}
+
+.container-fluid {
+    padding: 0;
+}
+
+.container-fluid > div:first-child {padding-left: 0;}
+.container-fluid > div:last-child {padding-right: 0;}
+
+svg {
+    font: 10px sans-serif
+}
+
+/* Widgets style */
+
+label {margin-top: 12px;}
+
+.multiSelect > .multiSelectButton,
+.multiSelect > .checkboxLayer,
+.multiSelect .checkBoxContainer,
+.multiSelect .multiSelectItem,
+.multiSelect .multiSelectItem * {
+    width: 100%;
+}
+
+.multiSelect > .multiSelectButton {
+    text-align: left;
+}
+
+.multiSelect .multiSelectItem span {
+    display: inline-block;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+/* Entity style */
+
+rect.entity, .entity rect {
+  stroke-width: 1px;
+}
+rect.entity.rig, .entity.rig rect {
+    fill: #53777A;
+    stroke: rgba(110, 158, 162, 1.0);
+}
+rect.entity.company, .entity.company rect {
+    fill: #C02942;
+    stroke: rgba(255, 59, 88, 1.0);
+}
+rect.entity.cflag, rect.entity.rflag, .entity.cflag rect, .entity.rflag rect {
+  fill: #ECD078;
+  stroke: rgba(255, 255, 160, 1.0);
+}
+
+/* Sankey diagram */
+
+#sankey-container {
+  padding: 20px 0;
+}
+
+#sankey-container .entity rect {
+  cursor: pointer;
+  fill-opacity: .9;
+  shape-rendering: crispEdges;
+}
+
+#sankey-container .entity text {
+  pointer-events: none;
+  text-shadow: 0 1px 0 #fff;
+}
+
+#sankey-container .relation {
+  fill: none;
+  stroke: #000;
+  stroke-opacity: .2;
+}
+
+#sankey-container .relation.selected {
+  stroke-opacity: .6;
+}
+
+/* Network style */
+
+#network-container .relation {
+    stroke: #ECD078;
+    stroke-width: 2px;
+}
+#network-container .relation.ismanagedby {stroke: #D95B43;}
+#network-container .relation.isoperatedby {stroke: #542437;}
+
+#network-container .group {
+    fill: rgba(255, 255, 255, 0.25);
+    stroke: rgba(255, 255, 255, 0.33);
+    stroke-width: 1px;
+}
+
+#network-container text.label {
+    fill: white;
+    font-size: 8px;
+}
+
+/* Map style */
+
+#map-container .country {
+  fill: #222;
+  stroke: #000;
+  stroke-width: 0.25px;
+}
+
+#map-container .connection {
+    stroke: #C02942;
+    stroke-width: 0.5px;
+}

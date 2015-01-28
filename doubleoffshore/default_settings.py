@@ -1,3 +1,3 @@
 
-DEBUG = True
-ASSETS_DEBUG = True
+DEBUG = False
+ASSETS_DEBUG = False

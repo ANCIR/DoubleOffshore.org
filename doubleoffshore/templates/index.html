@@ -1,3 +1,56 @@
+{% extends "layout.html" %}
 
+{% block page_title %}How Nigeria's Offshore Industry Works{% endblock %}
 
-foo
+{% block content %}
+    
+  <!-- intro -->
+  <div ng-controller="SankeyController as sankey">
+    <p>
+    This visualization shows the connections between oil rigs in {[activeLocation]} (<strong>middle</strong>), the countries they are registered in (<strong>left</strong>) and the companies that own, operate and manage them (<strong>right</strong>). Click on a country or company for more information about the particular entity.
+    </p>
+
+    <!-- sankey diagram -->
+    <div id="sankey-container"></div>
+  </div>
+
+  <div ng-controller="NetworkController as network" class="container-fluid">
+      <!-- query controls -->
+      <div class="col-md-2">
+          <form ng-submit="network.update()" role="form">
+              <span class="text-muted">Select oil rigs by choosing 0 or more filtering criteria and clicking <em>Show rigs</em>.</span>
+              <label>Owners:</label>
+              <div multi-select input-model="ownerValues" button-label="name" item-label="name" tick-property="ticked" default-label="anyone"></div>
+              <label>Operators:</label>
+              <div multi-select input-model="operatorValues" button-label="name" item-label="name" tick-property="ticked" default-label="anyone"></div>
+              <label>Managers:</label>
+              <div multi-select input-model="managerValues" button-label="name" item-label="name" tick-property="ticked" default-label="anyone"></div>
+              <label>Flags:</label>
+              <div multi-select input-model="flagValues" button-label="name" item-label="name" tick-property="ticked" default-label="any country"></div>
+              <br/><input type="submit" class="btn btn-primary" value="Show rigs" />
+          </form>
+      </div>
+
+      <!-- network canvas -->
+      <div class="col-md-10">
+          <div id="network-container"></div>
+          <div>
+              <form class="form-inline">
+                  <label>Group by </label>
+                  <select ng-model="groupByField" ng-options="key for (key, val) in groupByOptions" class="form-control">
+                      <option value="">None</option>
+                  </select>
+              </form>
+          </div>
+      </div>
+
+      <div class="col-md-2"></div>
+
+      <!-- map view -->
+      <div class="col-md-10">
+          <div id="map-container"></div>
+      </div>
+  </div>
+
+{% endblock %}
+

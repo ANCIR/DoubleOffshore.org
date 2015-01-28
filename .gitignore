@@ -7,3 +7,5 @@ bower_components
 dist/*
 *.env
 
+doubleoffshore/static/.webassets-cache/*
+doubleoffshore/static/vendor/*

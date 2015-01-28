@@ -13,3 +13,4 @@ logging.basicConfig(level=logging.DEBUG)
 app = Flask(__name__)
 app.config.from_object(default_settings)
 assets = Environment(app)
+

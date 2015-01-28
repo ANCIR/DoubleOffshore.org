@@ -8,3 +8,4 @@ dataset
 cssselect
 psycopg2
 scrapekit
+cssmin
