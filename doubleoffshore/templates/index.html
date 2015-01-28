@@ -33,22 +33,33 @@
 
       <!-- network canvas -->
       <div class="col-md-10">
-          <div id="network-container"></div>
-          <div>
-              <form class="form-inline">
+        <div role="tabpanel">
+          <ul class="nav nav-tabs" role="tablist">
+            <li role="presentation" class="active">
+              <a href="#network" aria-controls="network" role="tab" data-toggle="tab">Companies and Rigs</a>
+            </li>
+            <li role="presentation"><a href="#map" aria-controls="map" role="tab" data-toggle="tab">Flags and Countries</a></li>
+          </ul>
+
+          <!-- Tab panes -->
+          <div class="tab-content">
+            <div role="tabpanel" class="tab-pane active" id="network">
+              <div id="network-container"></div>
+              <div>
+                <form class="form-inline">
                   <label>Group by </label>
                   <select ng-model="groupByField" ng-options="key for (key, val) in groupByOptions" class="form-control">
-                      <option value="">None</option>
+                    <option value="">None</option>
                   </select>
-              </form>
+                </form>
+              </div>
+
+            </div>
+            <div role="tabpanel" class="tab-pane" id="map">
+              <div id="map-container"></div>
+            </div>
           </div>
-      </div>
-
-      <div class="col-md-2"></div>
-
-      <!-- map view -->
-      <div class="col-md-10">
-          <div id="map-container"></div>
+        </div>
       </div>
   </div>
 

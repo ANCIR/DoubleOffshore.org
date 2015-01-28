@@ -3,8 +3,14 @@
 @import "../vendor/bootstrap/less/mixins.less";
 
 // Local variables
-@theme-color: #559dc0;
+@theme-color: red;
+@body-bg: #222;
+@text-color: #ddd;
 @brand-primary: @theme-color;
+
+@color-rig: #53777A;
+@color-company: #C02942;
+@color-country: #ECD078;
 
 // Reset
 @import "../vendor/bootstrap/less/normalize.less";
@@ -67,8 +73,8 @@
     padding: 0;
 }
 
-.container-fluid > div:first-child {padding-left: 0;}
-.container-fluid > div:last-child {padding-right: 0;}
+.container-fluid > div:first-child { padding-left: 0; }
+.container-fluid > div:last-child { padding-right: 0; }
 
 svg {
     font: 10px sans-serif
@@ -103,74 +109,88 @@ rect.entity, .entity rect {
   stroke-width: 1px;
 }
 rect.entity.rig, .entity.rig rect {
-    fill: #53777A;
-    stroke: rgba(110, 158, 162, 1.0);
+  fill: @color-rig;
+  stroke: darken(@color-rig, 20%);
+  //stroke: rgba(110, 158, 162, 1.0);
 }
 rect.entity.company, .entity.company rect {
-    fill: #C02942;
-    stroke: rgba(255, 59, 88, 1.0);
+  fill: @color-company;
+  stroke: darken(@color-company, 20%);
+  //stroke: rgba(255, 59, 88, 1.0);
 }
 rect.entity.cflag, rect.entity.rflag, .entity.cflag rect, .entity.rflag rect {
-  fill: #ECD078;
-  stroke: rgba(255, 255, 160, 1.0);
+  fill: @color-country;
+  stroke: darken(@color-country, 20%);
+  //stroke: rgba(255, 255, 160, 1.0);
+}
+
+rect.background {
+  fill: @body-bg;
 }
 
 /* Sankey diagram */
 
 #sankey-container {
   padding: 20px 0;
+
+  .entity rect {
+    cursor: pointer;
+    fill-opacity: .9;
+    shape-rendering: crispEdges;
+  }
+
+  .entity text {
+    pointer-events: none;
+    stroke: @text-color;
+    shape-rendering: crispEdges;
+    text-shadow: 0 2px 0 darken(@body-bg, 10%);
+  }
+
+  .relation {
+    fill: none;
+    stroke: #ccc;
+    stroke-opacity: .2;
+
+    &.selected {
+      stroke-opacity: .6;
+    }
+  }
 }
 
-#sankey-container .entity rect {
-  cursor: pointer;
-  fill-opacity: .9;
-  shape-rendering: crispEdges;
-}
-
-#sankey-container .entity text {
-  pointer-events: none;
-  text-shadow: 0 1px 0 #fff;
-}
-
-#sankey-container .relation {
-  fill: none;
-  stroke: #000;
-  stroke-opacity: .2;
-}
-
-#sankey-container .relation.selected {
-  stroke-opacity: .6;
-}
 
 /* Network style */
 
-#network-container .relation {
+#network-container {
+  .relation {
     stroke: #ECD078;
     stroke-width: 2px;
-}
-#network-container .relation.ismanagedby {stroke: #D95B43;}
-#network-container .relation.isoperatedby {stroke: #542437;}
+  }
+  .relation.ismanagedby {stroke: #D95B43;}
+  .relation.isoperatedby {stroke: #542437;}
 
-#network-container .group {
+  .group {
     fill: rgba(255, 255, 255, 0.25);
     stroke: rgba(255, 255, 255, 0.33);
     stroke-width: 1px;
-}
+  }
 
-#network-container text.label {
+  text.label {
     fill: white;
     font-size: 8px;
+  }
 }
 
 /* Map style */
 
-#map-container .country {
-  fill: #222;
-  stroke: #000;
-  stroke-width: 0.25px;
-}
+#map-container {
+  .country {
+    fill: #666;
+    stroke: #222;
+    stroke-width: 0.25px;
+  }
 
-#map-container .connection {
+  .connection {
     stroke: #C02942;
     stroke-width: 0.5px;
+  }
 }
