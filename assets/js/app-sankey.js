@@ -520,7 +520,7 @@
 
         /* Network canvas setup */
 
-        var svgGraph = createSVG($("#network-container")[0]);
+        var svgGraph = createSVG($("#network-container")[0], [318, 238], 0.28);
         var sizeGraph = svgGraph[1];
         svgGraph = svgGraph[0];
         var nodePadding = 8;
@@ -554,7 +554,7 @@
 
         /* Map setup */
 
-        var svgMap = createSVG($("#map-container")[0], [-87, 0], 1.15);
+        var svgMap = createSVG($("#map-container")[0], [-137, 2], 1.15);
         var sizeMap = svgMap[1];
         svgMap = svgMap[0];
         var projection = d3.geo.mercator()
@@ -860,7 +860,7 @@
 
         function createSVG(el, startTranslation, startScale) {
             var width = $(el).width();
-            var height = 500;
+            var height = Math.round(width / 3.0 * 2.0);
 
             var svg = d3.select(el).append('svg')
                 .attr("height", height)
