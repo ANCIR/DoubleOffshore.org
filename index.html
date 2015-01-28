@@ -84,6 +84,10 @@ layout: default
 .container-fluid > div:first-child {padding-left: 0;}
 .container-fluid > div:last-child {padding-right: 0;}
 
+svg {
+    font: 10px sans-serif
+}
+
 /* Widgets style */
 
 label {margin-top: 12px;}
@@ -107,35 +111,34 @@ label {margin-top: 12px;}
     white-space: nowrap;
 }
 
+/* Entity style */
+
+rect.entity, .entity rect {
+  stroke-width: 1px;
+}
+rect.entity.rig, .entity.rig rect {
+    fill: #53777A;
+    stroke: rgba(110, 158, 162, 1.0);
+}
+rect.entity.company, .entity.company rect {
+    fill: #C02942;
+    stroke: rgba(255, 59, 88, 1.0);
+}
+rect.entity.cflag, rect.entity.rflag, .entity.cflag rect, .entity.rflag rect {
+  fill: #ECD078;
+  stroke: rgba(255, 255, 160, 1.0);
+}
+
 /* Sankey diagram */
 
 #sankey-container {
   padding: 20px 0;
 }
 
-#sankey-container svg {
-  font: 10px sans-serif
-}
-
 #sankey-container .entity rect {
   cursor: pointer;
   fill-opacity: .9;
   shape-rendering: crispEdges;
-}
-
-#sankey-container .entity.rig rect {
-  fill: #53777A;
-  stroke: rgba(40, 58, 59, 1.0);
-}
-
-#sankey-container .entity.company rect {
-  fill: #C02942;
-  stroke: rgba(94, 20, 32, 1.0);
-}
-
-#sankey-container .entity.cflag rect, #sankey-container .entity.rflag rect {
-  fill: #ECD078;
-  stroke: rgba(115, 101, 58, 1.0);
 }
 
 #sankey-container .entity text {
@@ -161,16 +164,6 @@ label {margin-top: 12px;}
 }
 #network-container .relation.ismanagedby {stroke: #D95B43;}
 #network-container .relation.isoperatedby {stroke: #542437;}
-
-#network-container .entity {stroke-width: 1px;}
-#network-container .entity.rig {
-    fill: #53777A;
-    stroke: rgba(110, 158, 162, 1.0);
-}
-#network-container .entity.company {
-    fill: #C02942;
-    stroke: rgba(255, 59, 88, 1.0);
-}
 
 #network-container .group {
     fill: rgba(255, 255, 255, 0.25);
