@@ -93,8 +93,8 @@
             function processCompanyFlag(company) {
                 if (!extra[company.name])
                     return;
-                var flagName = (extra[company.name]['Based'] ||
-                                extra[company.name]['Ultimate Owner Jurisdiction']);
+                var flagName = (extra[company.name]['Ultimate Owner Jurisdiction'] ||
+                                extra[company.name]['Based']);
                 if (!flagName)
                     return;
                 // add the company flag
