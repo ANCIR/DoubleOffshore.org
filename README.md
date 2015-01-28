@@ -1,3 +1,3 @@
 # TODO
 
-* permalinks to country/company info
+* popups for rigs and companies in Sankey
