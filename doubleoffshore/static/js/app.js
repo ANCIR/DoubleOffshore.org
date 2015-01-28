@@ -882,6 +882,7 @@
                 }));
             svg = svg.append("g");
             zoomer
+                .scaleExtent([Math.min(startScale, 0.3), Math.max(startScale, 5)])
                 .translate(startTranslation ? startTranslation : [width / 2, height / 2])
                 .scale(startScale ? startScale : 0.3)
                 .event(zoomhandle);
