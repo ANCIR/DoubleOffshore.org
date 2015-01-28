@@ -10,3 +10,5 @@ psycopg2
 scrapekit
 cssmin
 gunicorn
+unicodecsv
+normality
