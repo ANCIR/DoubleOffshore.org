@@ -5,11 +5,6 @@
             $interpolateProvider.startSymbol('{[').endSymbol(']}');
         });
 
-    function slugify(s) {
-        // good enough for our small dataset
-        return s.replace(/[^A-Za-z0-9-]+/g, '-');
-    }
-
     function createDrawnObject(model) {
         return {
             m: model,
