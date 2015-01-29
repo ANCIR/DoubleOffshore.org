@@ -27,10 +27,10 @@
         this.type = type;
     };
 
-    var Entity = function(name, type) {
+    var Entity = function(name, slug, type) {
         this.name = name;
+        this.slug = slug;
         this.type = type;
-        this.slug = slugify(name);
     };
 
     app.directive("flagPopup", function() {
@@ -45,203 +45,103 @@
     });
 
 
-    app.factory("model", ['$location', '$q', function($location, $q) {
+    app.factory("model", ['$q', function($q) {
 
-        var allEntities = [];
-        // DATA to be filtered
-        var rigs = crossfilter();
-        // DIMENSIONS
-        var rigsByLocation = rigs.dimension(function(d) {return d.raw_country;});
-        // ACTIVE ENTITIES
-        var activeLocation = $location.search()['country'];
-        if (activeLocation === undefined)
-            activeLocation = 'Nigeria';
+        var activeLocation = 'Nigeria';
+        (function(){
+            // NOTE: angular's $location.search contains fragment, not query
+            var match = /(\?|&)country=([^&]+)/g.exec(window.location.search);
+            if (match !== null)
+                activeLocation = window.decodeURIComponent(match[2]);
+        })();
         var activeNetwork = $q.defer();
-        // DATA SOURCES
-        var companyData = $q.defer();
-        var rigData = $q.defer();
 
         /* Load data */
 
-        d3.csv('/static/data/companies.csv', function(error, data) {
-            var dat = {};
-            data.forEach(function(row){dat[row['Company'].trim()] = row;});
-            companyData.resolve(dat);
-        });
+        d3.json('/data?country=' + activeLocation, function(error, data) {
 
-        d3.json("static/data/rigs.json", function(error, data) {
-            rigData.resolve(data);
-        });
-
-        /* Process data */
-
-        $q.all([rigData.promise, companyData.promise]).then(function(values) {
-
-            var data = values[0];
-            var extra = values[1];
-            var uniqueCompanies = {};
-            var uniqueRigFlags = {};
-            var uniqueLocations = {};
-            var uniqueCompanyFlags = {};
-
-            function clean(data) {
-                for (var key in data)
-                    if (data[key] && typeof data[key] === "string")
-                        data[key] = data[key].trim();
-            }
-
-            function processCompanyFlag(company) {
-                if (!extra[company.name])
-                    return;
-                var flagName = (extra[company.name]['Ultimate Owner Jurisdiction'] ||
-                                extra[company.name]['Based']);
-                if (!flagName)
-                    return;
-                // add the company flag
-                var flag;
-                if (!uniqueCompanyFlags[flagName]) {
-                    flag = new Entity(flagName, "cflag");
-                    uniqueCompanyFlags[flagName] = flag;
-                    allEntities.push(flag);
-                }
-                else
-                    flag = uniqueCompanyFlags[flagName];
-                company.flag = flag;
-            }
-
-            function processCompanies(obj) {
-                if (!obj.name)
-                    return;
-                var company;
-                // add the company
-                if (!uniqueCompanies[obj.name]) {
-                    company = new Entity(obj.name, "company");
-                    uniqueCompanies[obj.name] = company;
-                    allEntities.push(company);
-                    processCompanyFlag(company);
-                }
-                else
-                    company = uniqueCompanies[obj.name];
-                // add the related company directly to the rig entity
-                obj.rig[obj.type] = company;
-            }
-
-            for (var i = 0; i < data.length; i++) {
-                var entDat = data[i];
-                // trim some strings
-                clean(entDat);
-                // add the rig
-                var rig = new Entity(entDat.name, "rig");
-                allEntities.push(rig);
-                // add all attributes prefixed with 'raw_'
-                for (var key in entDat)
-                    rig['raw_' + key] = entDat[key];
-                // add the controlling companies
-                var companies = [
-                    {name: entDat.owner, type: "owner", rig: rig},
-                    {name: entDat.operator, type: "operator", rig: rig},
-                    {name: entDat.manager, type: "manager", rig: rig}
-                ];
-                companies.forEach(processCompanies);
-                // add the flag
-                if (entDat.flag) {
-                    var flag;
-                    if (!uniqueRigFlags[entDat.flag]) {
-                        flag = new Entity(entDat.flag, "rflag");
-                        uniqueRigFlags[entDat.flag] = flag;
-                        allEntities.push(flag);
-                    }
-                    else
-                        flag = uniqueRigFlags[entDat.flag];
-                    rig.flag = flag;
-                }
-                // add the location
-                if (entDat.country) {
-                    var location;
-                    if (!uniqueLocations[entDat.country]) {
-                        location = new Entity(entDat.country, "location");
-                        uniqueLocations[entDat.country] = location;
-                        allEntities.push(location);
-                    }
-                    else
-                        location = uniqueLocations[entDat.country];
-                    rig.location = location;
-                }
-            }
-
-            rigs.add(allEntities.filter(function(o) {return o.type === "rig";}));
-            selectActiveEntities(activeLocation);
-
-        });
-
-        function selectActiveEntities(country) {
-
-            rigsByLocation.filterAll();
-            var activeRigs = rigsByLocation.filterExact(country).top(Infinity);
+            var mapByType = {
+                rflag: {},
+                cflag: {},
+                company: {},
+                rig: {}
+            };
             var relations = [];
-            var entities = [];
-            var rflags = {};
-            var cflags = {};
-            var companies = {};
 
-            var entityAttrs = [
-                ['flag', 'is flag of', true, rflags],
-                ['owner', 'is owned by', false, companies],
-                ['manager', 'is managed by', false, companies],
-                ['operator', 'is operated by', false, companies],
+            var entities = data.entities.map(function(obj) {
+                var ent = $.extend(new Entity(), obj);
+                if (mapByType[obj.type])
+                    mapByType[obj.type][ent.slug] = ent;
+                return ent;
+            });
+
+            var rigRelations = [
+                ['flag', 'is flag of', true, mapByType.rflag],
+                ['owner', 'is owned by', false, mapByType.company],
+                ['manager', 'is managed by', false, mapByType.company],
+                ['operator', 'is operated by', false, mapByType.company],
             ];
 
-            function addEntityAndRelation(arr) {
+            function resolveRelation(arr) {
                 var attrName = arr[0];
                 var relationType = arr[1];
                 var relationDir = arr[2];
-                var added = arr[3];
-                var ent = this[attrName];
-                if (!ent)
+                var objects = arr[3];
+                var slug = this[attrName];
+                if (!slug)
                     return;
-                if (!added[ent.name]) {
-                    // add to active entities
-                    added[ent.name] = ent;
-                    entities.push(ent);
-                }
+                var relatedEntity = objects[slug];
+                relatedEntity._visited = true;
+                this[attrName] = relatedEntity;
                 var relation;
                 if (relationDir)
-                    relation = new Relation(ent, this, relationType);
+                    relation = new Relation(relatedEntity, this, relationType);
                 else
-                    relation = new Relation(this, ent, relationType);
+                    relation = new Relation(this, relatedEntity, relationType);
                 relations.push(relation);
             }
 
-            activeRigs.forEach(function(obj) {
-                entities.push(obj);
-                entityAttrs.forEach(addEntityAndRelation, obj);
-            });
-
-            for (var key in companies) {
-                var company = companies[key];
-                var flag = company.flag;
-                if (!flag)
-                    continue;
-                if (!cflags[flag.name]) {
-                    cflags[flag.name] = company.flag;
-                    entities.push(flag);
-                }
-                relations.push(new Relation(company, flag, "is based in"));
+            for (var slug in mapByType.rig) {
+                var rig = mapByType.rig[slug];
+                rig._visited = true;
+                rigRelations.forEach(resolveRelation, rig);
             }
 
-            activeNetwork.resolve({
-                'rigs': activeRigs,
-                'rflags': Object.keys(rflags).map(function(k) {return rflags[k];}),
-                'cflags': Object.keys(cflags).map(function(k) {return cflags[k];}),
-                'companies': Object.keys(companies).map(function(k) {return companies[k];}),
-                'entities': entities,
-                'relations': relations
+            for (slug in mapByType.company) {
+                var company = mapByType.company[slug];
+                if (!company._visited) continue;
+                resolveRelation.call(
+                    company,
+                    ['raw_flag', 'is based in', false, mapByType.cflag]
+                );
+            }
+
+            // remove entities that are not connected to
+            // a rig entity, either directly or indirectly
+            entities = entities.filter(function(ent) {
+                if (ent._visited) {
+                    delete ent._visited;
+                    return true;
+                }
+                if (mapByType[ent.type])
+                    delete mapByType[ent.type][ent.slug];
+                return false;
             });
 
-        }
+            var model = {
+                'entities': entities,
+                'relations': relations
+            };
+            [['rigs', 'rig'],
+             ['rflags', 'rflag'],
+             ['cflags', 'cflag'],
+             ['companies', 'company']].forEach(function(arr) {
+                model[arr[0]] = Object
+                    .keys(mapByType[arr[1]])
+                    .map(function(k) {return mapByType[arr[1]][k];});
+            });
+            activeNetwork.resolve(model);
 
-        activeNetwork.promise.then(function(nw) {
-                console.log(nw);
         });
 
         return {
@@ -435,29 +335,29 @@
                             setSelected(this, d);
                         else if (d.target === ent) {
                             setSelected(this, d);
-                            rigs[d.m.source.name] = d.source;
+                            rigs[d.m.source.slug] = d.source;
                         }
                     });
                     relation.each(function(d) {
-                        if (d.m.target.type === 'rig' && rigs[d.m.target.name])
+                        if (d.m.target.type === 'rig' && rigs[d.m.target.slug])
                             setSelected(this, d);
                     });
                 }
                 else if (ent.m.type === "rflag") {
                     relation.each(function(d) {
                         if (d.source === ent) {
-                            rigs[d.m.target.name] = d.target;
+                            rigs[d.m.target.slug] = d.target;
                             setSelected(this, d);
                         }
                     });
                     relation.each(function(d) {
-                        if (d.m.source.type === 'rig' && rigs[d.m.source.name]) {
-                            companies[d.m.target.name] = d.target;
+                        if (d.m.source.type === 'rig' && rigs[d.m.source.slug]) {
+                            companies[d.m.target.slug] = d.target;
                             setSelected(this, d);
                         }
                     });
                     relation.each(function(d) {
-                        if (d.m.source.type === 'company' && companies[d.m.source.name])
+                        if (d.m.source.type === 'company' && companies[d.m.source.slug])
                             setSelected(this, d);
                     });
                 }
@@ -465,18 +365,18 @@
                 else {
                     relation.each(function(d) {
                         if (d.target === ent) {
-                            companies[d.m.source.name] = d.source;
+                            companies[d.m.source.slug] = d.source;
                             setSelected(this, d);
                         }
                     });
                     relation.each(function(d) {
-                        if (d.m.target.type === 'company' && companies[d.m.target.name]) {
-                            rigs[d.m.source.name] = d.source;
+                        if (d.m.target.type === 'company' && companies[d.m.target.slug]) {
+                            rigs[d.m.source.slug] = d.source;
                             setSelected(this, d);
                         }
                     });
                     relation.each(function(d) {
-                        if (d.m.target.type === "rig" && rigs[d.m.target.name])
+                        if (d.m.target.type === "rig" && rigs[d.m.target.slug])
                             setSelected(this, d);
                     });
                 }
@@ -631,7 +531,7 @@
                 var selected = {};
                 values
                     .filter(function(obj) {return obj.ticked;})
-                    .forEach(function(obj) {selected[obj.name] = true;});
+                    .forEach(function(obj) {selected[obj.slug] = true;});
                 return selected;
             }
 
@@ -670,21 +570,21 @@
                     rig.operator
                 ];
                 companies.forEach(function(company) {
-                    if (company === undefined)
+                    if (!company)
                         return;
-                    if (!entityMap[company.name]) {
+                    if (!entityMap[company.slug]) {
                         var target = createDrawnObject(company);
                         company._drawnObject = target;
                         target.setSize(50, 50);
                         entities.push(target);
-                        entityMap[company.name] = target;
+                        entityMap[company.slug] = target;
                     }
                 });
             });
             var relations = network.relations
                 .filter(function(rel) {
                     return (entityMap[rel.source.raw_id] &&
-                            entityMap[rel.target.name]);
+                            entityMap[rel.target.slug]);
                 })
                 .map(function(rel) {
                     var obj = createDrawnObject(rel);
