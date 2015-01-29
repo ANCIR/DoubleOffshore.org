@@ -42,6 +42,7 @@
 
     app.factory("model", ['$q', function($q) {
 
+        var activeNetwork = $q.defer();
         var activeLocation = 'Nigeria';
         (function(){
             // NOTE: angular's $location.search contains fragment, not query
@@ -49,7 +50,6 @@
             if (match !== null)
                 activeLocation = window.decodeURIComponent(match[2]);
         })();
-        var activeNetwork = $q.defer();
 
         /* Load data */
 
@@ -252,11 +252,22 @@
                 .selectAll(".relation")
                 .data(relations)
                 .enter()
-                .append("path")
+                .append("g")
                 .attr("class", function(d) {return "relation " + d.m.type.replace(/ /g, "");})
-                .attr("d", pathGeneratorSK)
-                .style("stroke-width", function(d) {return Math.max(1, d.dy);})
                 .sort(function(a, b) {return b.dy - a.dy;});
+
+            relation.append("path")
+                .attr("d", pathGeneratorSK)
+                .style("stroke-width", function(d) {return Math.max(1, d.dy);});
+
+            relation.filter(".isbasedin")
+                .filter(function(d) {return d.m.source.raw_ultimate_owner;})
+                .append("text")
+                .attr("class", "owner")
+                .attr("x", function(d) {return d.source.x + d.source.dx + 6;})
+                .attr("y", function(d) {return d.source.y + d.sy + d.dy / 2;})
+                .attr("text-anchor", "start")
+                .text(function(d) {return 'via ' + d.m.source.raw_ultimate_owner;});
 
             relation.append("title")
                 .text(function(d) {return d.source.m.name + " → " + d.target.m.name;});

@@ -139,7 +139,7 @@ rect.background {
     shape-rendering: crispEdges;
   }
 
-  .entity text {
+  .entity text, .relation text.owner {
     pointer-events: none;
     stroke: @text-color;
     shape-rendering: crispEdges;
@@ -151,8 +151,17 @@ rect.background {
     stroke: #ccc;
     stroke-opacity: .2;
 
+    text.owner {
+      visibility: hidden;
+      stroke-opacity: 1;
+    }
+
     &.selected {
       stroke-opacity: .6;
+
+      text.owner {
+        visibility: visible;
+      }
     }
   }
 }
