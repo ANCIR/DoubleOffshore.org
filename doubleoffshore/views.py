@@ -10,6 +10,11 @@ def index():
     return render_template("index.html", country=country)
 
 
+@app.route('/about')
+def about():
+    return render_template("about.html")
+
+
 @app.route('/data')
 def get_data():
     country = request.args.get('country', 'Nigeria')
