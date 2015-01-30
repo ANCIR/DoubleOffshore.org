@@ -43,17 +43,10 @@
     app.factory("model", ['$q', function($q) {
 
         var activeNetwork = $q.defer();
-        var activeLocation = 'Nigeria';
-        (function(){
-            // NOTE: angular's $location.search contains fragment, not query
-            var match = /(\?|&)country=([^&]+)/g.exec(window.location.search);
-            if (match !== null)
-                activeLocation = window.decodeURIComponent(match[2]);
-        })();
 
         /* Load data */
 
-        d3.json('/data?country=' + activeLocation, function(error, data) {
+        d3.json('/data' + window.location.search, function(error, data) {
 
             var mapByType = {
                 rflag: {},
@@ -139,10 +132,7 @@
 
         });
 
-        return {
-            'activeNetwork': activeNetwork.promise,
-            'activeLocation': activeLocation,
-        };
+        return activeNetwork.promise;
 
     }]);
 
@@ -151,7 +141,6 @@
 
         /* Get data */
 
-        $scope.activeLocation = $model.activeLocation;
         $scope.flagData = {};
 
         d3.csv('/static/data/countries.csv', function(error, data) {
@@ -160,7 +149,7 @@
             });
         });
 
-        $model.activeNetwork.then(function(network) {
+        $model.then(function(network) {
             updateSankey(network);
         });
 
@@ -501,7 +490,7 @@
 
 
         $scope.update = function() {
-            $model.activeNetwork.then(function(network) {
+            $model.then(function(network) {
                 updateNetworkAndMap(network);
             });
         };

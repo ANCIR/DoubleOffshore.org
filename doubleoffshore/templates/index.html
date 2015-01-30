@@ -1,13 +1,13 @@
 {% extends "layout.html" %}
 
-{% block page_title %}How Nigeria's Offshore Industry Works{% endblock %}
+{% block page_title %}How {{ country }}'s Offshore Industry Works{% endblock %}
 
 {% block content %}
     
   <!-- intro -->
   <div ng-controller="SankeyController as sankey">
     <p>
-    This visualization shows the connections between oil rigs in {[activeLocation]} (<strong>middle</strong>), the countries they are registered in (<strong>left</strong>) and the companies that own, operate and manage them (<strong>right</strong>). Click on a country or company for more information about the particular entity.
+    This visualization shows the connections between oil rigs in {{ country }} (<strong>middle</strong>), the countries they are registered in (<strong>left</strong>) and the companies that own, operate and manage them (<strong>right</strong>). Click on a country or company for more information about the particular entity.
     </p>
 
     <!-- sankey diagram -->

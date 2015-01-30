@@ -6,7 +6,8 @@ from doubleoffshore.data import country_data
 
 @app.route('/')
 def index():
-    return render_template("index.html")
+    country = request.args.get('country', 'Nigeria')
+    return render_template("index.html", country=country)
 
 
 @app.route('/data')
