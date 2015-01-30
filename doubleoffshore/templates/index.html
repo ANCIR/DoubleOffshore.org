@@ -7,8 +7,12 @@
   <!-- intro -->
   <div ng-controller="SankeyController as sankey">
     <p>
-    This visualization shows the connections between oil rigs in {{ country }} (<strong>middle</strong>), the countries they are registered in (<strong>left</strong>) and the companies that own, operate and manage them (<strong>right</strong>). Click on a country or company for more information about the particular entity.
+    The visualizations below show the connections between <span class='box rig'>oil rigs</span> in {{ country }}, the <span class='box country'>countries</span> they are registered in and the <span class='box company'>companies</span> that own, operate and manage them.
     </p>
+
+    <p class="info">Hover over a box to highlight its connections.</p>
+
+    <p class="info">Click on a box to show more information.</p>
 
     <!-- sankey diagram -->
     <div id="sankey-container"></div>

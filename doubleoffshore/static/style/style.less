@@ -58,13 +58,6 @@
 @import "../vendor/bootstrap/less/utilities.less";
 @import "../vendor/bootstrap/less/responsive-utilities.less";
 
-
-#info-container .panel-title > a {
-  display: block;
-  width: 100%;
-  height: 100%;
-}
-
 .popover {
   max-width: 600px;
 }
@@ -75,6 +68,18 @@
 
 .container-fluid > div:first-child { padding-left: 0; }
 .container-fluid > div:last-child { padding-right: 0; }
+
+.box {
+  display: inline-block;
+
+  span& {
+    padding: 3px;
+  }
+}
+
+.info {
+  font-size: larger;
+}
 
 svg {
     font: 10px sans-serif
@@ -122,6 +127,26 @@ rect.entity.cflag, rect.entity.rflag, .entity.cflag rect, .entity.rflag rect {
   fill: @color-country;
   stroke: darken(@color-country, 20%);
   //stroke: rgba(255, 255, 160, 1.0);
+}
+
+.box {
+  &.rig {
+    background-color: @color-rig;
+    color: contrast(@color-rig, @body-bg, @text-color);
+    border: solid 1px darken(@color-rig, 20%);
+  }
+
+  &.country {
+    background-color: @color-country;
+    color: contrast(@color-country, @body-bg, @text-color);
+    border: solid 1px darken(@color-country, 20%);
+  }
+
+  &.company {
+    background-color: @color-company;
+    color: contrast(@color-company, @body-bg, @text-color);
+    border: solid 1px darken(@color-company, 20%);
+  }
 }
 
 rect.background {
