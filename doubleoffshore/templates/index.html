@@ -5,24 +5,31 @@
 {% block content %}
     
   <!-- intro -->
-  <div ng-controller="SankeyController as sankey">
-    <p>
-    The visualizations below show the connections between <span class='box rig'>oil rigs</span> in {{ country }}, the <span class='box country'>countries</span> they are registered in and the <span class='box company'>companies</span> that own, operate and manage them.
-    </p>
+  <div class="row">
+    <div class="col-md-9">
+      <p>
+      The visualizations below show the connections between <span class='box rig'>oil rigs</span> in {{ country }}, the <span class='box country'>countries</span> they are registered in and the <span class='box company'>companies</span> that own, operate and manage them.
+      </p>
+    </div>
 
-    <p class="info">Hover over a box to highlight its connections.</p>
+    <div class="col-md-3">
+      <div class="info">
+        <p><i class="fa fa-info-circle"></i> Hover over a box to highlight its connections.</p>
+        <p><i class="fa fa-info-circle"></i> Click on a box to show more information.</p>
+      </div>
+    </div>
+  </div>
 
-    <p class="info">Click on a box to show more information.</p>
-
+  <div ng-controller="SankeyController as sankey" class="row">
     <!-- sankey diagram -->
     <div id="sankey-container"></div>
   </div>
 
-  <div ng-controller="NetworkController as network" class="container-fluid">
+  <div ng-controller="NetworkController as network" class="row">
       <!-- query controls -->
       <div class="col-md-2">
           <form ng-submit="update()" role="form">
-              <span class="text-muted">Select oil rigs by choosing 0 or more filtering criteria and clicking <em>Show rigs</em>.</span>
+              <div class="info"><i class="fa fa-info-circle"></i> Select oil rigs by choosing 0 or more filtering criteria and clicking <em>Show rigs</em>.</div>
               <label>Owners:</label>
               <select name="owners" multiple chosen class="form-control" ng-model="selectedOwners" ng-options="o for o in ownerValues" data-placeholder="No owner filter">
                 <option value=""></option>
@@ -41,6 +48,12 @@
               </select>
               <br/><input type="submit" class="btn btn-primary" value="Show rigs" />
           </form>
+          <form class="form-inline">
+            <label>Group by </label>
+            <select ng-model="groupByField" ng-options="key for (key, val) in groupByOptions" class="form-control">
+              <option value="">None</option>
+            </select>
+          </form>
       </div>
 
       <!-- network canvas -->
@@ -57,15 +70,6 @@
           <div class="tab-content">
             <div role="tabpanel" class="tab-pane active" id="network">
               <div id="network-container"></div>
-              <div>
-                <form class="form-inline">
-                  <label>Group by </label>
-                  <select ng-model="groupByField" ng-options="key for (key, val) in groupByOptions" class="form-control">
-                    <option value="">None</option>
-                  </select>
-                </form>
-              </div>
-
             </div>
             <div role="tabpanel" class="tab-pane" id="map">
               <div id="map-container"></div>

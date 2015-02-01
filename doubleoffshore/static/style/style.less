@@ -12,6 +12,10 @@
 @color-company: #C02942;
 @color-country: #ECD078;
 
+@font-family-sans-serif: 'Droid Sans', Helvetica, Arial, sans-serif;
+@font-family-serif: 'Droid Serif', "Times New Roman", Times, serif;
+@headings-font-family: @font-family-serif;
+
 // Reset
 @import "../vendor/bootstrap/less/normalize.less";
 @import "../vendor/bootstrap/less/print.less";
@@ -78,11 +82,47 @@
 }
 
 .info {
-  font-size: larger;
+  border-left: 1px solid @text-color;
+  padding-left: 12px;
+}
+
+.row {
+  margin-bottom: 20px;
 }
 
 svg {
-    font: 10px sans-serif
+  font-size: 10px;
+  font-family: @font-family-sans-serif;
+}
+
+ul.nav li {
+  font-family: @font-family-serif;
+  font-weight: bold;
+}
+
+.form-control, .btn {
+  border-radius: 0;
+}
+
+.btn {
+  margin-top: 12px;
+}
+
+.site-header {
+  font-size: 24px;
+  font-weight: bold;
+  font-family: @font-family-serif;
+  background-color: @text-color;
+  margin-bottom: 40px;
+
+  a {
+    display: inline-block;
+    padding: 12px 12px;
+  }
+
+  a:hover {
+    text-decoration: none;
+  }
 }
 
 /* Widgets style */
