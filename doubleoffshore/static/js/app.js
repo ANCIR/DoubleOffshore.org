@@ -413,8 +413,8 @@
         // GROUPING VALUES
         $scope.groupByOptions = {
             'flag': 'raw_flag',
-            'drilling depth': 'raw_drilling_depth',
-            'water depth': 'raw_rated_water_depth',
+            'drilling depth': 'raw_drillingdepth',
+            'water depth': 'raw_ratedwaterdepth',
             'owner': 'raw_owner',
             'operator': 'raw_operator',
             'manager': 'raw_manager'
@@ -658,7 +658,7 @@
 
             var values = {};
             _cola.nodes().forEach(function(obj, i) {
-                if (!obj.m[dimension])
+                if (obj.m.type !== 'rig' || !obj.m[dimension])
                     return;
                 if (!values[obj.m[dimension]])
                     values[obj.m[dimension]] = [];
