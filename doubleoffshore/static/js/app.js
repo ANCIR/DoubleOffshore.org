@@ -1,6 +1,6 @@
 (function(){
     var app = angular
-        .module("doubleoffshore", ["multi-select"])
+        .module("doubleoffshore", ["localytics.directives"])
         .config(function($interpolateProvider) {
             $interpolateProvider.startSymbol('{[').endSymbol(']}');
         });
@@ -406,6 +406,10 @@
         $scope.managerValues = [];
         $scope.operatorValues = [];
         $scope.ownerValues = [];
+        $scope.selectedFlags = null;
+        $scope.selectedManagers = null;
+        $scope.selectedOperators = null;
+        $scope.selectedOwners = null;
         // GROUPING VALUES
         $scope.groupByOptions = {
             'flag': 'raw_flag',
@@ -505,7 +509,7 @@
                     rigsByOperator.group(),
                     rigsByOwner.group()
                 ];
-                var makeOptions = function(obj) {return {name: obj.key, ticked: false};};
+                var makeOptions = function(obj) {return obj.key;};
                 $scope.flagValues = groups[0].all().map(makeOptions);
                 $scope.managerValues = groups[1].all().map(makeOptions);
                 $scope.operatorValues = groups[2].all().map(makeOptions);
@@ -522,29 +526,21 @@
         /* Functions to manipulate relations and entities */
 
         function applyActiveFilters() {
-            function getSelectedValues(values) {
-                var selected = {};
-                values
-                    .filter(function(obj) {return obj.ticked;})
-                    .forEach(function(obj) {selected[obj.slug] = true;});
-                return selected;
-            }
-
             function oneOf(selected) {
-                return function(val) {return selected[val];};
+                if (!selected || selected.length === 0)
+                    return function(val) {return true;};
+                return function(val) {return $.inArray(val, selected) > -1;};
             }
 
             // apply all filters
             [
-                [rigsByFlag, $scope.flagValues],
-                [rigsByManager, $scope.managerValues],
-                [rigsByOperator, $scope.operatorValues],
-                [rigsByOwner, $scope.ownerValues]
+                [rigsByFlag, oneOf($scope.selectedFlags)],
+                [rigsByManager, oneOf($scope.selectedManagers)],
+                [rigsByOperator, oneOf($scope.selectedOperators)],
+                [rigsByOwner, oneOf($scope.selectedOwners)]
             ].forEach(function(arr){
                 arr[0].filterAll();
-                var selected = getSelectedValues(arr[1]);
-                if (!($.isEmptyObject(selected)))
-                    arr[0].filterFunction(oneOf(selected));
+                arr[0].filterFunction(arr[1]);
             });
         }
 

@@ -21,16 +21,24 @@
   <div ng-controller="NetworkController as network" class="container-fluid">
       <!-- query controls -->
       <div class="col-md-2">
-          <form ng-submit="network.update()" role="form">
+          <form ng-submit="update()" role="form">
               <span class="text-muted">Select oil rigs by choosing 0 or more filtering criteria and clicking <em>Show rigs</em>.</span>
               <label>Owners:</label>
-              <div multi-select input-model="ownerValues" button-label="name" item-label="name" tick-property="ticked" default-label="anyone"></div>
+              <select name="owners" multiple chosen class="form-control" ng-model="selectedOwners" ng-options="o for o in ownerValues" data-placeholder="No owner filter">
+                <option value=""></option>
+              </select>
               <label>Operators:</label>
-              <div multi-select input-model="operatorValues" button-label="name" item-label="name" tick-property="ticked" default-label="anyone"></div>
+              <select name="operators" multiple chosen class="form-control" ng-model="selectedOperators" ng-options="o for o in operatorValues" data-placeholder="No operator filter">
+                <option value=""></option>
+              </select>
               <label>Managers:</label>
-              <div multi-select input-model="managerValues" button-label="name" item-label="name" tick-property="ticked" default-label="anyone"></div>
+              <select name="managers" multiple chosen class="form-control" ng-model="selectedManagers" ng-options="o for o in managerValues" data-placeholder="No manager filter">
+                <option value=""></option>
+              </select>
               <label>Flags:</label>
-              <div multi-select input-model="flagValues" button-label="name" item-label="name" tick-property="ticked" default-label="any country"></div>
+              <select name="flags" multiple chosen class="form-control" ng-model="selectedFlags" ng-options="o for o in flagValues" data-placeholder="No flag filter">
+                <option value=""></option>
+              </select>
               <br/><input type="submit" class="btn btn-primary" value="Show rigs" />
           </form>
       </div>

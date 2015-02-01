@@ -8,8 +8,8 @@
     <meta name="author" content="African Network of Centers for Investigative Reporting" />
     
     {% assets filters="less,cssmin,cssrewrite", output="assets/style.css",
-        "vendor/angular-multi-select/angular-multi-select.css",
-        "style/style.less" %}
+        "style/style.less",
+        "vendor/chosen/chosen.css" %}
       <link type="text/css" href="{{ ASSET_URL }}" rel="stylesheet">
     {% endassets %}
     <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
@@ -28,9 +28,10 @@
 
     {% assets filters="uglifyjs", output="assets/script.js",
         "vendor/jquery/dist/jquery.js",
+        "vendor/chosen/chosen.jquery.min.js",
         "vendor/bootstrap/dist/js/bootstrap.js",
         "vendor/angular/angular.js",
-        "vendor/angular-multi-select/angular-multi-select.js",
+        "vendor/angular-chosen-localytics/chosen.js",
         "vendor/d3/d3.js",
         "vendor/d3-geo-projection/index.js",
         "vendor/topojson/topojson.js",
