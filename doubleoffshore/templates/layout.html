@@ -25,6 +25,11 @@
 
     {% include '_footer.html' %}
 
+    <script>
+        var DoubleOffshore = DoubleOffshore || {};
+        DoubleOffshore.slug = "{{country_slug}}";
+    </script>
+    
     {% assets filters="uglifyjs", output="assets/script.js",
         "vendor/jquery/dist/jquery.js",
         "vendor/chosen/chosen.jquery.min.js",

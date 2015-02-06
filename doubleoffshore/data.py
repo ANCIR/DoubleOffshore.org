@@ -44,13 +44,13 @@ class DataConverter(object):
                 company.get('based')
             company['flag'] = self.make_entity(flag, 'cflag')
             self.make_entity(company.get('company'), 'company', raw=company)
-            
+
     def make_entity(self, name, type_, raw={}):
         slug = slugify(name)
         if not slug:
             return
         entity = {'name': name, 'slug': slug, 'type': type_}
-        
+
         for k, v in raw.items():
             entity['raw_%s' % k] = v
         key = (type_, slug)
@@ -61,12 +61,13 @@ class DataConverter(object):
         return slug
 
     def by_country(self, country):
+        country_slug = slugify(country)
         for rig_data in self.rigs_data:
-            if rig_data.get('country') != country:
+            if slugify(rig_data.get('country')) != country_slug:
                 continue
             rig_slug = self.make_entity(rig_data['name'], 'rig', raw=rig_data)
             rig = self.entities[('rig', rig_slug)]
-            
+
             for role in ['owner', 'operator', 'manager']:
                 rig[role] = self.make_entity(rig_data.get(role), 'company')
 

@@ -46,7 +46,7 @@
 
         /* Load data */
 
-        d3.json('/data' + window.location.search, function(error, data) {
+        d3.json('/data/' + DoubleOffshore.slug + '.json', function(error, data) {
 
             var mapByType = {
                 rflag: {},

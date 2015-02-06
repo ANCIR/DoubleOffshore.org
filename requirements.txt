@@ -14,3 +14,5 @@ unicodecsv
 normality>=0.2.1
 pylibmc
 flask-cache
+awscli
+Frozen-Flask==0.11

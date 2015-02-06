@@ -5,6 +5,7 @@ bower_components
 *.DS_Store
 *.egg-info
 dist/*
+build/*
 *.env
 
 doubleoffshore/static/.webassets-cache/*
