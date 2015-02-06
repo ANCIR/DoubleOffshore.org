@@ -10,3 +10,4 @@ build/*
 
 doubleoffshore/static/.webassets-cache/*
 doubleoffshore/static/vendor/*
+doubleoffshore/static/assets/*
