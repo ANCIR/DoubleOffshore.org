@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <title>{% block page_title %}{% endblock %} - The Double Offshore</title>
+    <title>{% block page_title %}{% endblock %} - Double Offshore</title>
     <meta name="author" content="African Network of Centers for Investigative Reporting" />
     
     {% assets filters="less,cssmin,cssrewrite", output="assets/style.css",
@@ -29,7 +29,7 @@
         var DoubleOffshore = DoubleOffshore || {};
         DoubleOffshore.slug = "{{country_slug}}";
     </script>
-    
+
     {% assets filters="uglifyjs", output="assets/script.js",
         "vendor/jquery/dist/jquery.js",
         "vendor/chosen/chosen.jquery.min.js",
