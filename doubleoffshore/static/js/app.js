@@ -156,11 +156,11 @@
         /* Set up sankey */
 
         var heightSK = 900;
-        var marginSK = {top: 6, right: 1, bottom: 6, left: 1};
+        var marginSK = {top: 30, right: 1, bottom: 6, left: 1};
         var svgSK = d3.select("#sankey-container")
             .append("svg")
             .attr("width", "100%")
-            .attr("height", heightSK + marginSK.top + marginSK.bottom)
+            .attr("height", heightSK + marginSK.top + marginSK.bottom + 40)
             .append("g")
             .attr("transform", "translate(" + marginSK.left + "," + marginSK.top + ")");
         // don't want to hardcode the width
@@ -183,6 +183,7 @@
                 ent._drawnObject = obj;
                 return obj;
             });
+
             var relations = network.relations.map(function(rel) {
                 var obj = createDrawnObject(rel);
                 obj.source = rel.source._drawnObject;
@@ -190,6 +191,14 @@
                 obj.value = 1.0;
                 return obj;
             });
+
+            // relations.forEach(function(rel) {
+            //     console.log(rel.m.type);
+            //     if (rel.m.type === 'is owned by') {
+            //         console.log(rel.target, rel.source);
+            //     }
+            // });
+
             network.rigs.forEach(function(obj) {
                 var dudEntity;
                 var dudRelation;
@@ -202,6 +211,7 @@
                     dudRelation.value = 1.0;
                     relations.push(dudRelation);
                 }
+
                 if (!obj.owner && !obj.manager && !obj.operator) {
                     dudEntity = createDrawnObject("dud");
                     entities.push(dudEntity);
@@ -212,12 +222,14 @@
                     relations.push(dudRelation);
                 }
             });
+
             network.companies.forEach(function(obj) {
                 if (obj.flag)
                     return;
                 var dudEntity = createDrawnObject("dud");
                 entities.push(dudEntity);
                 var dudRelation = createDrawnObject("dud");
+
                 dudRelation.source = obj._drawnObject;
                 dudRelation.target = dudEntity;
                 dudRelation.value = 1.0;
@@ -236,7 +248,10 @@
 
             svgSK.selectAll("*").remove();
 
-            var relation = svgSK.append("g")
+            var mainG = svgSK.append("g")
+                .attr("transform", function(d) {return "translate(0,40)";});
+
+            var relation = mainG.append("g")
                 .attr("class", "relations")
                 .selectAll(".relation")
                 .data(relations)
@@ -261,7 +276,7 @@
             relation.append("title")
                 .text(function(d) {return d.source.m.name + " → " + d.target.m.name;});
 
-            var entity = svgSK.append("g")
+            var entity = mainG.append("g")
                 .attr("class", "entities")
                 .selectAll(".entity")
                 .data(entities)
@@ -293,13 +308,49 @@
             entity.append("text")
                 .attr("x", -6)
                 .attr("y", function(d) {return d.dy / 2;})
-                .attr("dy", ".35em")
+                .attr("dy", ".4em")
                 .attr("text-anchor", "end")
                 .attr("transform", null)
                 .text(function(d) {return d.m.name;})
                 .filter(function(d) {return d.x < widthSK / 2;})
                 .attr("x", 6 + sankey.nodeWidth())
                 .attr("text-anchor", "start");
+
+            var columnsX = [];
+            entities.forEach(function(e) {
+                var x = parseInt(e.x, 10);
+                if (columnsX.indexOf(x) == -1) {
+                    columnsX.push(x);
+                }
+            });
+            columnsX = columnsX.sort(function(a, b) { return a - b; });
+            svgSK.append('text')
+                .attr('x', columnsX[0])
+                .attr('y', 0)
+                .attr('class', 'heading')
+                .attr("text-anchor", "start")
+                .text('Offshore Registrations');
+
+            svgSK.append('text')
+                .attr('x', columnsX[1] + 17)
+                .attr('y', 0)
+                .attr('class', 'heading')
+                .attr("text-anchor", "start")
+                .text('Drilling Rigs');
+
+            svgSK.append('text')
+                .attr('x', columnsX[2])
+                .attr('y', 0)
+                .attr('class', 'heading')
+                .attr("text-anchor", "end")
+                .text('Companies');
+
+            svgSK.append('text')
+                .attr('x', columnsX[3] + 15)
+                .attr('y', 0)
+                .attr('class', 'heading')
+                .attr("text-anchor", "end")
+                .text('Jurisdictions');
 
             function setSelected(el, d) {
                 d3.select(el)

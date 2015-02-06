@@ -7,6 +7,7 @@
 @body-bg: #222;
 @text-color: #ddd;
 @brand-primary: @theme-color;
+@transparent-bg: rgba(0, 0, 0, 0);
 
 @color-rig: #53777A;
 @color-company: #C02942;
@@ -62,6 +63,15 @@
 @import "../vendor/bootstrap/less/utilities.less";
 @import "../vendor/bootstrap/less/responsive-utilities.less";
 
+
+body { 
+  background: url(/static/img/background.png) no-repeat center center fixed; 
+  -webkit-background-size: cover;
+  -moz-background-size: cover;
+  -o-background-size: cover;
+  background-size: cover;
+}
+
 .popover {
   max-width: 600px;
 }
@@ -95,24 +105,19 @@ svg {
   font-family: @font-family-sans-serif;
 }
 
-ul.nav li {
-  font-family: @font-family-serif;
-  font-weight: bold;
-}
+// .form-control, .btn {
+//   border-radius: 0;
+// }
 
-.form-control, .btn {
-  border-radius: 0;
-}
-
-.btn {
-  margin-top: 12px;
-}
+// .btn {
+//   margin-top: 12px;
+// }
 
 .site-header {
   font-size: 24px;
   font-weight: bold;
-  font-family: @font-family-serif;
-  background-color: @text-color;
+  //font-family: @font-family-serif;
+  //background-color: @text-color;
   margin-bottom: 40px;
 
   a {
@@ -123,30 +128,64 @@ ul.nav li {
   a:hover {
     text-decoration: none;
   }
+
+  ul.nav li {
+    font-family: @font-family-serif;
+    font-weight: bold;
+  }
+
 }
 
 /* Widgets style */
 
 label {margin-top: 12px;}
 
-.multiSelect > .multiSelectButton,
-.multiSelect > .checkboxLayer,
-.multiSelect .checkBoxContainer,
-.multiSelect .multiSelectItem,
-.multiSelect .multiSelectItem * {
-    width: 100%;
+// .multiSelect > .multiSelectButton,
+// .multiSelect > .checkboxLayer,
+// .multiSelect .checkBoxContainer,
+// .multiSelect .multiSelectItem,
+// .multiSelect .multiSelectItem * {
+//     width: 100%;
+// }
+
+// .multiSelect > .multiSelectButton {
+//     text-align: left;
+// }
+
+// .multiSelect .multiSelectItem span {
+//     display: inline-block;
+//     text-overflow: ellipsis;
+//     overflow: hidden;
+//     white-space: nowrap;
+// }
+
+.chosen-container, .chosen-container.chosen-container-multi {
+  .chosen-choices {
+    color: #fff;
+    background: rgba(255, 255, 255, 0.2);
+
+    .search-field input[type=text] {
+      color: #fff;
+      padding: 7px 10px 7px 10px;
+      height: auto;
+    }
+  }
+
+  .chosen-drop {
+    color: #000;
+  }
 }
 
-.multiSelect > .multiSelectButton {
-    text-align: left;
+.rigs-update {
+  margin-top: 1em;
+  margin-bottom: 1em;
 }
 
-.multiSelect .multiSelectItem span {
-    display: inline-block;
-    text-overflow: ellipsis;
-    overflow: hidden;
-    white-space: nowrap;
+.nav-tabs > li.active > a, .nav-tabs > li.active > a:hover, .nav-tabs > li.active > a:focus {
+  background-color: #000;
+  color: #fff;
 }
+
 
 /* Entity style */
 
@@ -190,13 +229,18 @@ rect.entity.cflag, rect.entity.rflag, .entity.cflag rect, .entity.rflag rect {
 }
 
 rect.background {
-  fill: @body-bg;
+  fill: @transparent-bg;
 }
 
 /* Sankey diagram */
 
 #sankey-container {
   padding: 20px 0;
+
+  .heading {
+    fill: #fff;
+    font-size: 20px;
+  }
 
   .entity rect {
     cursor: pointer;
@@ -206,9 +250,11 @@ rect.background {
 
   .entity text, .relation text.owner {
     pointer-events: none;
-    stroke: @text-color;
+    //stroke: @text-color;
+    font-size: 13px;
+    fill: @text-color;
     shape-rendering: crispEdges;
-    text-shadow: 0 2px 0 darken(@body-bg, 10%);
+    text-shadow: 0 2px 2px darken(@body-bg, 30%);
   }
 
   .relation {
@@ -222,7 +268,7 @@ rect.background {
     }
 
     &.selected {
-      stroke-opacity: .6;
+      stroke-opacity: .8;
 
       text.owner {
         visibility: visible;

@@ -29,27 +29,31 @@
       <!-- query controls -->
       <div class="col-md-2">
           <form ng-submit="update()" role="form">
-              <div class="info"><i class="fa fa-info-circle"></i> Select oil rigs by choosing 0 or more filtering criteria and clicking <em>Show rigs</em>.</div>
+              <div class="info"><i class="fa fa-info-circle"></i> Select oil rigs by choosing filtering criteria and clicking <em>Show rigs</em>.</div>
+              
               <label>Owners:</label>
               <select name="owners" multiple chosen class="form-control" ng-model="selectedOwners" ng-options="o for o in ownerValues" data-placeholder="No owner filter">
                 <option value=""></option>
               </select>
+
               <label>Operators:</label>
-              <select name="operators" multiple chosen class="form-control" ng-model="selectedOperators" ng-options="o for o in operatorValues" data-placeholder="No operator filter">
+              <select name="operators" multiple chosen class="form-control" ng-model="selectedOperators" ng-options="o for o in operatorValues" data-placeholder="No operator filter" class="form-control">
                 <option value=""></option>
               </select>
+              
               <label>Managers:</label>
               <select name="managers" multiple chosen class="form-control" ng-model="selectedManagers" ng-options="o for o in managerValues" data-placeholder="No manager filter">
                 <option value=""></option>
               </select>
+              
               <label>Flags:</label>
               <select name="flags" multiple chosen class="form-control" ng-model="selectedFlags" ng-options="o for o in flagValues" data-placeholder="No flag filter">
                 <option value=""></option>
               </select>
-              <br/><input type="submit" class="btn btn-primary" value="Show rigs" />
+              <input type="submit" class="btn btn-primary rigs-update" value="Show rigs" />
           </form>
           <form class="form-inline">
-            <label>Group by </label>
+            <label>Organize by</label>
             <select ng-model="groupByField" ng-options="key for (key, val) in groupByOptions" class="form-control">
               <option value="">None</option>
             </select>
