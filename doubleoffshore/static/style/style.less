@@ -3,18 +3,20 @@
 @import "../vendor/bootstrap/less/mixins.less";
 
 // Local variables
-@theme-color: red;
-@body-bg: #222;
-@text-color: #ddd;
-@brand-primary: @theme-color;
-@transparent-bg: rgba(0, 0, 0, 0);
 
 @color-rig: #53777A;
 @color-company: #C02942;
 @color-country: #ECD078;
 
-@font-family-sans-serif: 'Droid Sans', Helvetica, Arial, sans-serif;
-@font-family-serif: 'Droid Serif', "Times New Roman", Times, serif;
+@theme-color: @color-company;
+@body-bg: #222;
+@text-color: #ddd;
+@brand-primary: @theme-color;
+@transparent-bg: rgba(0, 0, 0, 0);
+
+
+@font-family-sans-serif: 'Hammersmith One', sans-serif;
+@font-family-serif: 'Kreon', serif;
 @headings-font-family: @font-family-serif;
 
 // Reset
@@ -64,24 +66,102 @@
 @import "../vendor/bootstrap/less/responsive-utilities.less";
 
 
-body { 
+body, html { 
+  height: 100%;
+}
+
+body {
+  /*
   background: url(/static/img/background.png) no-repeat center center fixed; 
+  -webkit-background-size: cover;
+  -moz-background-size: cover;
+  -o-background-size: cover;
+  background-size: cover;
+  */
+  font-family: @font-family-sans-serif;
+  
+  //position: relative;
+}
+
+#opener {
+  position: relative;
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  width: 100%;
+  display: block;
+  background-size: cover;
+  background-image: url(/static/img/rig_lead_bw.png);
+
+  h1 {
+    position: absolute;
+    top: 30%;
+    left: 10%;
+  }
+}
+
+.text-section {
+  position: relative;
+  margin: 0;
+  padding: 7em 0 7em 0;
+  min-height: 30%;
+  background: black;
+}
+
+.graphic-section {
+  position: relative;
+  margin: 0;
+  background: url(/static/img/background_bw.png) no-repeat center center fixed; 
   -webkit-background-size: cover;
   -moz-background-size: cover;
   -o-background-size: cover;
   background-size: cover;
 }
 
+.data-sources {
+  font-size: 1.4em;
+
+  .col-md-4 {
+    text-align: right;
+  }
+}
+
+h2 {
+  font-size: 2em;
+  border-bottom: 1px solid #fff;
+  margin-top: 2em;
+  padding-bottom: 0.5em;
+  margin-bottom: 1em;
+}
+
+
+/* Footer */
+footer {
+  background-color: #000;
+  border-top: 2px solid #222;
+  //margin-top: 2em;
+  padding-top: 2em;
+  padding-bottom: 2em;
+
+  img {
+    float: right;
+
+  }
+}
+
+
 .popover {
   max-width: 600px;
 }
 
+/*
 .container-fluid {
     padding: 0;
 }
 
 .container-fluid > div:first-child { padding-left: 0; }
 .container-fluid > div:last-child { padding-right: 0; }
+*/
 
 .box {
   display: inline-block;
@@ -94,6 +174,15 @@ body {
 .info {
   border-left: 1px solid @text-color;
   padding-left: 12px;
+}
+
+p.copy {
+  margin: 0 20% 0 20%;
+  font-size: 1.4em;
+}
+
+p.explainer {
+  font-size: 1.4em;
 }
 
 .row {
@@ -112,6 +201,7 @@ svg {
 // .btn {
 //   margin-top: 12px;
 // }
+
 
 .site-header {
   font-size: 24px;
@@ -192,16 +282,19 @@ label {margin-top: 12px;}
 rect.entity, .entity rect {
   stroke-width: 1px;
 }
+
 rect.entity.rig, .entity.rig rect {
   fill: @color-rig;
   stroke: darken(@color-rig, 20%);
   //stroke: rgba(110, 158, 162, 1.0);
 }
+
 rect.entity.company, .entity.company rect {
   fill: @color-company;
   stroke: darken(@color-company, 20%);
   //stroke: rgba(255, 59, 88, 1.0);
 }
+
 rect.entity.cflag, rect.entity.rflag, .entity.cflag rect, .entity.rflag rect {
   fill: @color-country;
   stroke: darken(@color-country, 20%);
@@ -238,7 +331,7 @@ rect.background {
   padding: 20px 0;
 
   .heading {
-    fill: #fff;
+    fill: @text-color;
     font-size: 20px;
   }
 
@@ -268,7 +361,7 @@ rect.background {
     }
 
     &.selected {
-      stroke-opacity: .8;
+      stroke-opacity: .6;
 
       text.owner {
         visibility: visible;
@@ -279,6 +372,10 @@ rect.background {
 
 
 /* Network style */
+
+.detail-explorer {
+  margin-top: 1em;
+}
 
 #network-container {
   .relation {
@@ -314,3 +411,5 @@ rect.background {
     stroke-width: 0.5px;
   }
 }
+
+

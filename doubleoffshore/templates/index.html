@@ -3,85 +3,131 @@
 {% block page_title %}How {{ country }}'s Offshore Industry Works{% endblock %}
 
 {% block content %}
+<div id="opener">
+  <h1>Drilling for oil in {{ country }}, twice offshore</h1>    
+</div>
+
+<div class="text-section">
+  <div class="container">
+    <div class="row">
+      <div class="col-md-12">
+        <p class="copy">
+          Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="graphic-section">
+  <div class="container">
+    <h2>From tax haven to your doorstep</h2>
+    <!-- intro -->
+    <div class="row">
+      <div class="col-md-9">
+        <p class="explainer">
+        The visualizations shows the connections between <span class='box rig'>oil rigs</span> in {{ country }}, the <span class='box country'>countries</span> they are registered in and the <span class='box company'>companies</span> that own, operate and manage them.
+        </p>
+      </div>
+
+      <div class="col-md-3">
+        <div class="info">
+          <p><i class="fa fa-info-circle"></i> Hover over a box to highlight its connections.</p>
+          <p><i class="fa fa-info-circle"></i> Click on a box to show more information.</p>
+        </div>
+      </div>
+    </div>
+    <div ng-controller="SankeyController as sankey" class="row">
+      <!-- sankey diagram -->
+      <div class="col-md-12">
+        <div id="sankey-container"></div>
+      </div>
+    </div>
+
     
-  <!-- intro -->
-  <div class="row">
-    <div class="col-md-9">
-      <p>
-      The visualizations below show the connections between <span class='box rig'>oil rigs</span> in {{ country }}, the <span class='box country'>countries</span> they are registered in and the <span class='box company'>companies</span> that own, operate and manage them.
-      </p>
-    </div>
+  </div>
+</div>
 
-    <div class="col-md-3">
-      <div class="info">
-        <p><i class="fa fa-info-circle"></i> Hover over a box to highlight its connections.</p>
-        <p><i class="fa fa-info-circle"></i> Click on a box to show more information.</p>
+<div class="text-section">
+  <div class="container">
+    <div class="row">
+      <div class="col-md-12">
+        <p class="copy">
+          Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+        </p>
       </div>
     </div>
   </div>
+</div>
 
-  <div ng-controller="SankeyController as sankey" class="row">
-    <!-- sankey diagram -->
-    <div id="sankey-container"></div>
-  </div>
+<div class="graphic-section">
+  <div class="container">
+    <h2>Explore the data in detail</h2>
+    <div ng-controller="NetworkController as network" class="row detail-explorer">
+        <!-- query controls -->
+        <div class="col-md-2">
+            <form ng-submit="update()" role="form">
+                <div class="info"><i class="fa fa-info-circle"></i> Select oil rigs by choosing filtering criteria and clicking <em>Show rigs</em>.</div>
+                
+                <label>Owners:</label>
+                <select name="owners" multiple chosen class="form-control" ng-model="selectedOwners" ng-options="o for o in ownerValues" data-placeholder="No owner filter">
+                  <option value=""></option>
+                </select>
 
-  <div ng-controller="NetworkController as network" class="row">
-      <!-- query controls -->
-      <div class="col-md-2">
-          <form ng-submit="update()" role="form">
-              <div class="info"><i class="fa fa-info-circle"></i> Select oil rigs by choosing filtering criteria and clicking <em>Show rigs</em>.</div>
-              
-              <label>Owners:</label>
-              <select name="owners" multiple chosen class="form-control" ng-model="selectedOwners" ng-options="o for o in ownerValues" data-placeholder="No owner filter">
-                <option value=""></option>
+                <label>Operators:</label>
+                <select name="operators" multiple chosen class="form-control" ng-model="selectedOperators" ng-options="o for o in operatorValues" data-placeholder="No operator filter" class="form-control">
+                  <option value=""></option>
+                </select>
+                
+                <label>Managers:</label>
+                <select name="managers" multiple chosen class="form-control" ng-model="selectedManagers" ng-options="o for o in managerValues" data-placeholder="No manager filter">
+                  <option value=""></option>
+                </select>
+                
+                <label>Flags:</label>
+                <select name="flags" multiple chosen class="form-control" ng-model="selectedFlags" ng-options="o for o in flagValues" data-placeholder="No flag filter">
+                  <option value=""></option>
+                </select>
+                <input type="submit" class="btn btn-primary rigs-update" value="Show rigs" />
+            </form>
+            <form class="form-inline">
+              <label>Organize by</label>
+              <select ng-model="groupByField" ng-options="key for (key, val) in groupByOptions" class="form-control">
+                <option value="">None</option>
               </select>
+            </form>
+        </div>
 
-              <label>Operators:</label>
-              <select name="operators" multiple chosen class="form-control" ng-model="selectedOperators" ng-options="o for o in operatorValues" data-placeholder="No operator filter" class="form-control">
-                <option value=""></option>
-              </select>
-              
-              <label>Managers:</label>
-              <select name="managers" multiple chosen class="form-control" ng-model="selectedManagers" ng-options="o for o in managerValues" data-placeholder="No manager filter">
-                <option value=""></option>
-              </select>
-              
-              <label>Flags:</label>
-              <select name="flags" multiple chosen class="form-control" ng-model="selectedFlags" ng-options="o for o in flagValues" data-placeholder="No flag filter">
-                <option value=""></option>
-              </select>
-              <input type="submit" class="btn btn-primary rigs-update" value="Show rigs" />
-          </form>
-          <form class="form-inline">
-            <label>Organize by</label>
-            <select ng-model="groupByField" ng-options="key for (key, val) in groupByOptions" class="form-control">
-              <option value="">None</option>
-            </select>
-          </form>
-      </div>
+        <!-- network canvas -->
+        <div class="col-md-10">
+          <div role="tabpanel">
+            <ul class="nav nav-tabs" role="tablist">
+              <li role="presentation" class="active">
+                <a href="#network" aria-controls="network" role="tab" data-toggle="tab">Companies and Rigs</a>
+              </li>
+              <li role="presentation"><a href="#map" aria-controls="map" role="tab" data-toggle="tab">Flags and Countries</a></li>
+            </ul>
 
-      <!-- network canvas -->
-      <div class="col-md-10">
-        <div role="tabpanel">
-          <ul class="nav nav-tabs" role="tablist">
-            <li role="presentation" class="active">
-              <a href="#network" aria-controls="network" role="tab" data-toggle="tab">Companies and Rigs</a>
-            </li>
-            <li role="presentation"><a href="#map" aria-controls="map" role="tab" data-toggle="tab">Flags and Countries</a></li>
-          </ul>
-
-          <!-- Tab panes -->
-          <div class="tab-content">
-            <div role="tabpanel" class="tab-pane active" id="network">
-              <div id="network-container"></div>
-            </div>
-            <div role="tabpanel" class="tab-pane" id="map">
-              <div id="map-container"></div>
+            <!-- Tab panes -->
+            <div class="tab-content">
+              <div role="tabpanel" class="tab-pane active" id="network">
+                <div id="network-container"></div>
+              </div>
+              <div role="tabpanel" class="tab-pane" id="map">
+                <div id="map-container"></div>
+              </div>
             </div>
           </div>
         </div>
-      </div>
+    </div>
   </div>
+</div>
+
+<div class="text-section">
+  <div class="container">
+    {% include '_about.html' %}
+  </div>
+</div>
 
 {% endblock %}
 

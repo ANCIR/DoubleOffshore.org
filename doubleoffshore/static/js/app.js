@@ -332,14 +332,14 @@
                 .text('Offshore Registrations');
 
             svgSK.append('text')
-                .attr('x', columnsX[1] + 17)
+                .attr('x', columnsX[1])
                 .attr('y', 0)
                 .attr('class', 'heading')
                 .attr("text-anchor", "start")
                 .text('Drilling Rigs');
 
             svgSK.append('text')
-                .attr('x', columnsX[2])
+                .attr('x', columnsX[2] + 15)
                 .attr('y', 0)
                 .attr('class', 'heading')
                 .attr("text-anchor", "end")
