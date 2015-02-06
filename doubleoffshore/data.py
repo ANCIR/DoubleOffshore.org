@@ -37,13 +37,20 @@ class DataConverter(object):
 
     def __init__(self):
         self.entities = dict()
-        self.rigs_data = get_sheet(app.config.get('RIGS_SHEET'))
+
+        self.countries_data = get_sheet(app.config.get('COUNTRIES_SHEET'))
+        for country in self.countries_data:
+            self.make_entity(country.get('country'), 'rflag', raw=country)
+            self.make_entity(country.get('country'), 'cflag', raw=country)
+
         self.companies_data = get_sheet(app.config.get('COMPANIES_SHEET'))
         for company in self.companies_data:
             flag = company.get('ultimate_owner_jurisdiction') or \
                 company.get('based')
             company['flag'] = self.make_entity(flag, 'cflag')
             self.make_entity(company.get('company'), 'company', raw=company)
+
+        self.rigs_data = get_sheet(app.config.get('RIGS_SHEET'))
 
     def make_entity(self, name, type_, raw={}):
         slug = slugify(name)
