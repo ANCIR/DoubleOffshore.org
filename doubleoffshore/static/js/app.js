@@ -475,7 +475,7 @@
         /* Network canvas setup */
 
         var $network = $("#network-container")[0];
-        var svgGraph = createSVG($network, $network, [318, 238], 0.28);
+        var svgGraph = createSVG($network, $network, [318, 238], 0.4);
         var sizeGraph = svgGraph[1];
         svgGraph = svgGraph[0];
         var nodePadding = 8;
@@ -812,6 +812,7 @@
                 .attr("height", height)
                 .attr("width", "100%")
                 .attr("pointer-events", "all");
+            svg = svg.append("g");
 
             // set up zoom
             var zoomer = d3.behavior.zoom();
@@ -822,7 +823,6 @@
                 .call(zoomer.on("zoom", function(){
                     svg.attr("transform", "translate(" + d3.event.translate + ") scale(" + d3.event.scale + ")");
                 }));
-            svg = svg.append("g");
             zoomer
                 .scaleExtent([Math.min(startScale, 0.3), Math.max(startScale, 5)])
                 .translate(startTranslation ? startTranslation : [width / 2, height / 2])
