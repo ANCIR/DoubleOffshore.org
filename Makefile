@@ -1,5 +1,5 @@
 
-all: assets build upload
+all: clear assets freeze upload
 
 web:
 	python doubleoffshore/manage.py runserver
@@ -9,7 +9,10 @@ assets:
 	# python doubleoffshore/manage.py assets --parse-templates clean
 	python doubleoffshore/manage.py assets --parse-templates build
 
-build:
+clear:
+	rm -rf build/*
+
+freeze:
 	python doubleoffshore/manage.py freeze
 
 upload:

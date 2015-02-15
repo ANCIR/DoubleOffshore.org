@@ -35,6 +35,7 @@
         "vendor/chosen/chosen.jquery.min.js",
         "vendor/bootstrap/dist/js/bootstrap.js",
         "vendor/angular/angular.js",
+        "vendor/angular-bootstrap/ui-bootstrap-tpls.js",
         "vendor/angular-chosen-localytics/chosen.js",
         "vendor/d3/d3.js",
         "vendor/d3-geo-projection/index.js",
@@ -45,6 +46,10 @@
         "js/app.js" %}
       <script src="{{ ASSET_URL }}"></script>
     {% endassets %}
+
+    {% for path, tmpl in g.templates %}
+      <script id="{{path}}" type="text/ng-template">{{ tmpl | safe }}</script>
+    {% endfor %}
 
   </body>
 </html>
