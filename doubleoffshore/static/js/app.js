@@ -1,8 +1,5 @@
 var app = angular
-    .module("doubleoffshore", ["localytics.directives", "ui.bootstrap"])
-    .config(function($interpolateProvider) {
-        $interpolateProvider.startSymbol('{[').endSymbol(']}');
-    });
+    .module("doubleoffshore", ["localytics.directives", "ui.bootstrap"]);
 
 function createDrawnObject(model) {
     return {
@@ -127,9 +124,6 @@ app.controller("PopupController", ['$scope', '$modalInstance', '$timeout', 'data
     function($scope, $modalInstance, $timeout, data) {
 
     $scope.d = data;
-    //console.log(data);
-    delete data._drawnObject;
-    $scope.djson = angular.toJson(data, true);
 }]);
 
 

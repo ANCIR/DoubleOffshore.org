@@ -15,9 +15,9 @@
 @transparent-bg: rgba(0, 0, 0, 0);
 
 
-@font-family-sans-serif: 'Hammersmith One', sans-serif;
-@font-family-serif: 'Kreon', serif;
-@headings-font-family: @font-family-serif;
+@font-family-sans-serif: 'Open Sans', sans-serif;
+//@font-family-serif: 'Kreon', serif;
+@font-family-headings: 'Kreon', sans-serif;
 
 // Reset
 @import "../vendor/bootstrap/less/normalize.less";
@@ -69,11 +69,15 @@
 html { height: 100%; }
 body { min-height: 100%; height: 100%; }
 //.modal-backdrop { bottom: 0; }
-.modal { color: #333; }
 
 
 body {
   font-family: @font-family-sans-serif;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: @font-family-headings;
+  font-weight: normal;
 }
 
 #opener {
@@ -111,13 +115,7 @@ body {
   background-size: cover;
 }
 
-.data-sources {
-  font-size: 1.4em;
 
-  .col-md-4 {
-    text-align: right;
-  }
-}
 
 h2 {
   font-size: 2em;
@@ -162,11 +160,19 @@ footer {
 
 p.copy {
   margin: 0 20% 1em 20%;
-  font-size: 1.4em;
+  font-size: 1.2em;
 }
 
 p.explainer {
-  font-size: 1.4em;
+  font-size: 1.2em;
+}
+
+.data-sources {
+  font-size: 1.2em;
+
+  .col-md-4 {
+    text-align: right;
+  }
 }
 
 .row {
@@ -176,27 +182,6 @@ p.explainer {
 svg {
   font-size: 10px;
   font-family: @font-family-sans-serif;
-}
-
-.site-header {
-  font-size: 24px;
-  font-weight: bold;
-  margin-bottom: 40px;
-
-  a {
-    display: inline-block;
-    padding: 12px 12px;
-  }
-
-  a:hover {
-    text-decoration: none;
-  }
-
-  ul.nav li {
-    font-family: @font-family-serif;
-    font-weight: bold;
-  }
-
 }
 
 /* Widgets style */
@@ -283,6 +268,7 @@ rect.background {
 
   .heading {
     fill: @text-color;
+    font-family: @font-family-headings;
     font-size: 20px;
   }
 
@@ -317,6 +303,29 @@ rect.background {
       text.owner {
         visibility: visible;
       }
+    }
+  }
+}
+
+.modal {
+  color: #333;
+
+  ul {
+    list-style-type: none;
+    padding-left: 0.5em;
+  }
+
+  table.table {
+    th.section {
+      font-size: 1.4em;
+      font-family: @font-family-headings;
+      padding-top: 1em;
+      padding-bottom: 0.5em;
+    }
+
+    tr td, tr th {
+      border-top: 0;
+
     }
   }
 }
