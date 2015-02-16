@@ -27,18 +27,6 @@ var Entity = function(name, slug, type) {
     this.type = type;
 };
 
-// app.directive("flagPopup", function() {
-//     return {
-//         restrict: "E",
-//         replace: true,
-//         templateUrl: "/static/templates/flag.html",
-//         scope: {
-//             data: "=data",
-//         },
-//     };
-// });
-
-
 app.factory("model", ['$q', function($q) {
 
     var activeNetwork = $q.defer();
@@ -135,10 +123,13 @@ app.factory("model", ['$q', function($q) {
 
 }]);
 
-app.controller("PopupController", ['$scope', '$modalInstance', 'data',
-    function($scope, $modalInstance, data) {
+app.controller("PopupController", ['$scope', '$modalInstance', '$timeout', 'data',
+    function($scope, $modalInstance, $timeout, data) {
 
     $scope.d = data;
+    //console.log(data);
+    delete data._drawnObject;
+    $scope.djson = angular.toJson(data, true);
 }]);
 
 

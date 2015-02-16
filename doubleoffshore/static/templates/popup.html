@@ -1,16 +1,35 @@
 <div class="modal-header">
-  <h3 class="modal-title" ng-bind="d.name">huhu</h3>
+  <h3 class="modal-title" ng-bind="d.name"></h3>
 </div>
 <div class="modal-body">
-    I'm a banana! {{d.name}}
+    <table class="table" ng-show="d.type == 'rflag' || d.type == 'cflag'">
+      <tr>
+        <th colspan="4">Country Facts</th>
+      </tr>
+      <tr>
+        <th>Region</th>
+        <td ng-bind="d.raw_geography || '&mdash;'"></td>
+        <th>Population</th>
+        <td ng-bind="d.raw_population || '&mdash;'"></td>
+      </tr>
 
-        <!-- Lots of fields not being shown here -->
-      <!--
-    <strong>FSI score:</strong> {[data["FSI Secrecy Score"]]} (<a target="_blank" href="{[data["FSI URL"]]}">full report</a>)<br/>
-    <strong>FSI rank:</strong> {[data["FSI Rank"]]}<br/>
-    <strong>Global rank as maritime flag:</strong> {[data["Global Rank as Maritime Flag CIA Factbook"]]}
+      <tr>
+        <th colspan="4">Financial Secrecy Index (2013)</th>
+      </tr>
+      <tr>
+        <th>Rank</th>
+        <td>#<span ng-bind="d.raw_fsi_rank || '&mdash;'"></span></td>
+        <th>Secrecy Score</th>
+        <td><span ng-bind="d.raw_fsi_secrecy_score || '&mdash;'"></span></td>
+      </tr>
+    </table>
+
+    <ul ng-show="d.type == 'rflag' || d.type == 'cflag'">
+      <li>
+        <sup>1</sup>
+        <a ng-href="{{d.raw_cia_factbook_link}}">CIA World Factbook, 2010-2012</a>
+      </li>
     </ul>
-    <p>{[data['Blurb']}}</p>
-    -->
 
+    <pre ng-bind="djson"></pre>
 </div>

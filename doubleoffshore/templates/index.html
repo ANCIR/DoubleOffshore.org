@@ -3,6 +3,7 @@
 {% block page_title %}How {{ country }}'s Offshore Industry Works{% endblock %}
 
 {% block content %}
+
 <div id="opener">
   <h1>Drilling for oil in {{ country }}, twice offshore</h1>    
 </div>
@@ -27,6 +28,9 @@
 
 <div class="graphic-section">
   <div class="container">
+    {% raw %}
+      {{ 'hihu' }}
+    {% endraw %}
     <h2>From tax haven to your doorstep</h2>
     <!-- intro -->
     <div class="row">
@@ -46,7 +50,8 @@
     <div ng-controller="SankeyController as sankey" class="row">
       <!-- sankey diagram -->
       <div class="col-md-12">
-        <div id="sankey-container"></div>
+        <div id="sankey-container">
+        </div>
       </div>
     </div>
 
