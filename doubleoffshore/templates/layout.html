@@ -26,13 +26,18 @@
         DoubleOffshore.slug = "{{country_slug}}";
     </script>
 
-    {% assets filters="uglifyjs", output="assets/script.js",
+    {% assets filters="uglifyjs", output="assets/jqangular.js",
         "vendor/jquery/dist/jquery.js",
         "vendor/chosen/chosen.jquery.min.js",
         "vendor/bootstrap/dist/js/bootstrap.js",
         "vendor/angular/angular.js",
         "vendor/angular-bootstrap/ui-bootstrap-tpls.js",
-        "vendor/angular-chosen-localytics/chosen.js",
+        "vendor/angular-chosen-localytics/chosen.js"
+        %}
+      <script src="{{ ASSET_URL }}"></script>
+    {% endassets %}
+
+    {% assets filters="uglifyjs", output="assets/d3app.js",
         "vendor/d3/d3.js",
         "vendor/d3-geo-projection/index.js",
         "vendor/topojson/topojson.js",
