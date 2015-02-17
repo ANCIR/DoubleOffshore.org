@@ -341,7 +341,7 @@ app.controller("SankeyController", ['model', '$compile', '$scope', '$modal',
             .attr('y', 0)
             .attr('class', 'heading')
             .attr("text-anchor", "end")
-            .text('Jurisdictions');
+            .text('Head Office');
 
         function setSelected(el, d) {
             d3.select(el)
