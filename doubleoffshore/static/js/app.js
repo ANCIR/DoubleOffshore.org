@@ -798,27 +798,48 @@ app.controller("NetworkController", ['model', '$scope', function($model, $scope)
     function createSVG(el, sizeEl, startTranslation, startScale) {
         var width = $(sizeEl).width();
         var height = Math.round(width / 3.0 * 2.0);
+        var currentScale = startScale ? startScale : 0.5;
+        // set up zoom
+        var zoom = d3.behavior.zoom()
+            .scaleExtent([Math.min(startScale, 0.5), Math.max(startScale, 5)]);
 
         var svg = d3.select(el).append('svg')
-            .attr("height", height)
-            .attr("width", "100%")
-            .attr("pointer-events", "all");
-        svg = svg.append("g");
+                .attr("height", height)
+                .attr("width", width)
+                .attr("pointer-events", "all")
+            .append("g")
+                .call(zoom);
 
-        // set up zoom
-        var zoomer = d3.behavior.zoom();
+        var handleEvents = zoom.on("zoom", function() {
+            svg.transition().attr("transform",
+                "translate(" + d3.event.translate + ") scale(" + d3.event.scale + ")");
+        });
+
         var zoomhandle = svg.append("rect")
             .attr("class", "background")
-            .attr("width", "100%")
-            .attr("height", "100%")
-            .call(zoomer.on("zoom", function(){
-                svg.attr("transform", "translate(" + d3.event.translate + ") scale(" + d3.event.scale + ")");
-            }));
-        zoomer
-            .scaleExtent([Math.min(startScale, 0.3), Math.max(startScale, 5)])
-            .translate(startTranslation ? startTranslation : [width / 2, height / 2])
-            .scale(startScale ? startScale : 0.3)
-            .event(zoomhandle);
+            .attr("width", width * 5)
+            .attr("height", height * 5)
+            .attr("transform", "translate(" + (width * -2) + "," + (height * -2) + ")");
+        
+        zoom
+            .translate(startTranslation ? startTranslation : [width / 3, height / 3])
+            .scale(currentScale)
+            .event(svg);
+
+        var boundedScale = function(change) {
+            currentScale = Math.max(Math.min(currentScale + change, 5), 0.5);
+            zoom
+                .scale(currentScale)
+                .event(svg);
+        };
+
+        var $el = $(el);
+        $el.find('.zoomIn').click(function() {
+            boundedScale(0.4);
+        });
+        $el.find('.zoomOut').click(function() {
+            boundedScale(-0.4);
+        });
 
         return [svg, [width, height]];
     }
