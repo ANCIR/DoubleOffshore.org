@@ -122,7 +122,7 @@ app.factory("model", ['$q', function($q) {
 
 app.controller("PopupController", ['$scope', '$modalInstance', '$timeout', 'data',
     function($scope, $modalInstance, $timeout, data) {
-
+    console.log(data);
     $scope.d = data;
 }]);
 

@@ -14,9 +14,9 @@
     </tr>
     <tr>
       <th width="25%">Secrecy Jurisdiction</th>
-      <td width="25%">{{ d.raw_secrecy_jurisdiction || '&mdash;' }}</td>
+      <td width="25%">{{ d.raw_secrecy_jurisdiction_or_opacity_characteristics || '&mdash;' }}</td>
       <td colspan="2">
-        <span ng-show="d.raw_open_to_foreign_entities_with_no_economic_activity_in_jurisdiction == 'Yes'">
+        <span ng-show="d.raw_open_to_foreign_entities == 'Yes'">
           Open to foreign entities with no economic activity in jurisdiction
         </span>
       </td>
