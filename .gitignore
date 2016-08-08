@@ -1,4 +1,5 @@
 jekyll-cache/_site
+_site
 .sass-cache
 bower_components
 *.pyc
