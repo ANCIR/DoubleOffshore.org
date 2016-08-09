@@ -1,0 +1,170 @@
+<div class="modal-header">
+  <h3 class="modal-title">Overview: {{d.name}}</h3>
+</div>
+<div class="modal-body">
+  <table class="table" ng-show="d.type == 'rflag' || d.type == 'cflag'">
+    <tr>
+      <th colspan="4" class="section">Country Facts</th>
+    </tr>
+    <tr>
+      <th width="25%">Region<sup>1</sup></th>
+      <td width="25%">{{ d.raw_geography || '&mdash;' }}</td>
+      <th width="25%">Population<sup>1</sup></th>
+      <td width="25%">{{ d.raw_population || '&mdash;' }}</td>
+    </tr>
+    <tr>
+      <th width="25%">Secrecy Jurisdiction</th>
+      <td width="25%">{{ d.raw_secrecy_jurisdiction_or_opacity_characteristics || '&mdash;' }}</td>
+      <td colspan="2">
+        <span ng-show="d.raw_open_to_foreign_entities == 'Yes'">
+          Open to foreign entities with no economic activity in jurisdiction
+        </span>
+      </td>
+    </tr>
+
+    <tr>
+      <th colspan="4" class="section">Industry Facts</th>
+    </tr>
+    <tr>
+      <th width="25%">Rank as Oil Producer<sup>1</sup></th>
+      <td width="25%">
+        <span ng-show="d.raw_oil_producing_rank">#</span>{{ d.raw_oil_producing_rank || '&mdash;' }}
+      </td>
+      <th width="25%">Barrels per day (thousands)</th>
+      <td width="25%" class="num">{{ d.raw_thousand_barrels_per_day || '&mdash;' }}</td>
+    </tr>
+
+    <tr>
+      <th width="25%">Rank as Maritime Flag<sup>1</sup></th>
+      <td width="25%">
+        <span ng-show="d.raw_global_rank_as_maritime_flag_cia_factbook">#</span>{{ d.raw_global_rank_as_maritime_flag_cia_factbook || '&mdash;' }}</td>
+      
+      <th width="25%">Total Vessels<sup>1</sup></th>
+      <td width="25%" class="num">{{ d.raw_total_vessel_cia_factbook_20102012 || '&mdash;' }}</td>
+    </tr>
+
+    <tr>
+      <th width="25%">Oil Tankers<sup>1</sup></th>
+      <td width="25%" class="num">{{ d.raw_oil_tankers_20102012 || '&mdash;' }}</td>
+
+      <th width="25%">Foreign Owned Vessels<sup>1</sup></th>
+      <td width="25%" class="num">
+        {{ d.raw_foreign_owned_cia_factbook_20102012 || '&mdash;' }}
+      </td>  
+    </tr>
+
+    <tr>
+      <th colspan="4" class="section">Financial Secrecy<sup>2</sup></th>
+    </tr>
+    <tr>
+      <th>Rank</th>
+      <td>
+        <span ng-show="d.raw_fsi_rank">#</span>{{ d.raw_fsi_rank || '&mdash;' }}
+        of 82 assessed
+      </td>
+      <th>
+        Secrecy Score
+        <small>
+          (<a href="http://www.financialsecrecyindex.com/PDF/FSI-Methodology.pdf">method</a>)
+        </small>
+      </th>
+      <td>
+        {{ d.raw_fsi_secrecy_score || '&mdash;' }}
+      </td>
+    </tr>
+    <tr ng-show="d.raw_public_company_accounts_fsi">
+      <th>Company Accounts</th>
+      <td colspan="3">
+        {{ d.raw_public_company_accounts_fsi }}
+      </td>
+    </tr>
+    <tr ng-show="d.raw_recorded_corporate_ownership_fsi">
+      <th>Record Company Ownership</th>
+      <td colspan="3">
+        {{ d.raw_information_exchange_fsi }}
+      </td>
+    </tr>
+    <tr ng-show="d.raw_public_company_ownership_fsi">
+      <th>Publish Company Ownership</th>
+      <td colspan="3">
+        {{ d.raw_public_company_ownership_fsi }}
+      </td>
+    </tr>
+    <tr ng-show="d.raw_trust_and_foundations_register_fsi">
+      <th>Publish Trusts Ownership</th>
+      <td colspan="3">
+        {{ d.raw_trust_and_foundations_register_fsi }}
+      </td>
+    </tr>
+    <tr ng-show="d.raw_efficiency_of_tax_administration_fsi">
+      <th>Tax Administration</th>
+      <td colspan="3">
+        {{ d.raw_efficiency_of_tax_administration_fsi }}
+      </td>
+    </tr>
+    <tr ng-show="d.raw_information_exchange_fsi">
+      <th>Information Exchange</th>
+      <td colspan="3">
+        {{ d.raw_information_exchange_fsi }}
+      </td>
+    </tr>
+    <tr>
+      <td colspan="4">
+        <ul>
+          <li>
+            <sup>1</sup>
+            Central Intelligence Agency, <a ng-href="{{d.raw_cia_factbook_link}}" target="_new">World Factbook, 2010-2012</a>
+          </li>
+          <li>
+            <sup>2</sup>
+            Tax Justice Network, 
+            <a ng-href="{{d.raw_fsi_url}}" target="_new">Financial Secrecy Index, 2013</a>
+          </li>
+        </ul>
+      </td>
+    </tr>
+  </table>
+
+  <table class="table" ng-show="d.type == 'rig'">
+    <tr>
+      <th colspan="4" class="section">Rig Facts<sup>1</sup></th>
+    </tr>
+    <tr>
+      <th width="25%">Location (field)</th>
+      <td width="25%">{{ d.raw_locationfield || '&mdash;' }}</td>
+      <th width="25%">Field Operator</th>
+      <td width="25%">{{ d.raw_fieldoperator || '&mdash;' }}</td>
+    </tr>
+    <tr>
+      <th width="25%">Rig Operator</th>
+      <td width="25%">{{ d.raw_operator || '&mdash;' }}</td>
+      <th width="25%">Rig Owner</th>
+      <td width="25%">{{ d.raw_owner || '&mdash;' }}</td>
+    </tr>
+    <tr>
+      <th width="25%">Country</th>
+      <td width="25%">{{ d.raw_country || '&mdash;' }}</td>
+      <th width="25%">Flag</th>
+      <td width="25%">{{ d.raw_flag.toString() || '&mdash;' }}</td>
+    </tr>
+    <tr>
+      <td colspan="4">
+        <ul>
+          <li>
+            <sup>1</sup>
+            {{d.raw_site}}, see <a ng-href="{{d.raw_detailuri}}" target="_new">details</a> (as of {{d.raw_scrapedate}}).
+          </li>
+        </ul>
+      </td>
+    </tr>
+  </table>
+
+  <table class="table" ng-show="d.type == 'company'">
+    <tr>
+      <th width="25%">Ultimate Owner</th>
+      <td width="25%">{{ d.raw_ultimate_owner || '&mdash;' }}</td>
+      <th width="25%">Jurisdiction</th>
+      <td width="25%">{{ d.raw_ultimate_owner_jurisdiction || '&mdash;' }}</td>
+    </tr>
+  </table>
+</div>
